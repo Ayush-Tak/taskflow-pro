@@ -44,7 +44,7 @@ const Board = () => {
   const handleDragStart = (event) => {
     // Add dragging class to body for mobile
     document.body.classList.add('dragging');
-    
+
     const { active } = event;
     const { id } = active;
     const isList = boardData.some((list) => list.id === id);
@@ -70,7 +70,7 @@ const Board = () => {
   const handleDragEnd = (event) => {
     // Remove dragging class from body
     document.body.classList.remove('dragging');
-    
+
     const { active, over } = event;
     setActiveItem(null);
     if (!over) return;
