@@ -5,6 +5,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -24,10 +25,17 @@ const Board = () => {
   const [activeItem, setActiveItem] = useState(null);
 
   const sensors = useSensors(
+    // Touch sensor for mobile devices
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
+    // Pointer sensor for desktop
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
-        delay: 250,
+        distance: 8,
       },
     })
   );

@@ -66,3 +66,14 @@ html, body {
   width: max-content;
   padding-right: 1rem;
 }
+
+/* Mobile touch optimizations */
+* {
+  touch-action: manipulation;
+}
+
+/* Prevent text selection during drag */
+.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}
