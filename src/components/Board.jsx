@@ -25,18 +25,17 @@ const Board = () => {
   const [activeItem, setActiveItem] = useState(null);
 
   const sensors = useSensors(
-    // Touch sensor for mobile devices with longer delay
+    // Try touch sensor first with very specific settings
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 300,
-        tolerance: 10,
+        delay: 250,
+        tolerance: 5,
       },
     }),
-    // Pointer sensor for desktop
+    // Fallback to pointer sensor
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10,
-        delay: 100,
+        distance: 3,
       },
     })
   );
@@ -44,6 +43,10 @@ const Board = () => {
   const handleDragStart = (event) => {
     // Add dragging class to body for mobile
     document.body.classList.add('dragging');
+    
+    // Store initial scroll position to restore if needed
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    document.body.style.top = `-${scrollTop}px`;
 
     const { active } = event;
     const { id } = active;
@@ -68,8 +71,13 @@ const Board = () => {
   };
 
   const handleDragEnd = (event) => {
-    // Remove dragging class from body
+    // Remove dragging class from body and restore scroll position
     document.body.classList.remove('dragging');
+    const scrollTop = document.body.style.top;
+    document.body.style.top = '';
+    if (scrollTop) {
+      window.scrollTo(0, parseInt(scrollTop || '0') * -1);
+    }
 
     const { active, over } = event;
     setActiveItem(null);
@@ -121,8 +129,13 @@ const Board = () => {
   };
 
   const handleDragCancel = () => {
-    // Clean up dragging state
+    // Clean up dragging state and restore scroll
     document.body.classList.remove('dragging');
+    const scrollTop = document.body.style.top;
+    document.body.style.top = '';
+    if (scrollTop) {
+      window.scrollTo(0, parseInt(scrollTop || '0') * -1);
+    }
     setActiveItem(null);
   };
 
