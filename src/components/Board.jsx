@@ -41,12 +41,8 @@ const Board = () => {
   );
 
   const handleDragStart = (event) => {
-    // Add dragging class to body for mobile
+    // Add dragging class to body for mobile (only disable vertical scroll)
     document.body.classList.add('dragging');
-    
-    // Store initial scroll position to restore if needed
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    document.body.style.top = `-${scrollTop}px`;
 
     const { active } = event;
     const { id } = active;
@@ -71,13 +67,8 @@ const Board = () => {
   };
 
   const handleDragEnd = (event) => {
-    // Remove dragging class from body and restore scroll position
+    // Remove dragging class from body
     document.body.classList.remove('dragging');
-    const scrollTop = document.body.style.top;
-    document.body.style.top = '';
-    if (scrollTop) {
-      window.scrollTo(0, parseInt(scrollTop || '0') * -1);
-    }
 
     const { active, over } = event;
     setActiveItem(null);
@@ -129,13 +120,8 @@ const Board = () => {
   };
 
   const handleDragCancel = () => {
-    // Clean up dragging state and restore scroll
+    // Clean up dragging state
     document.body.classList.remove('dragging');
-    const scrollTop = document.body.style.top;
-    document.body.style.top = '';
-    if (scrollTop) {
-      window.scrollTo(0, parseInt(scrollTop || '0') * -1);
-    }
     setActiveItem(null);
   };
 
@@ -161,7 +147,7 @@ const Board = () => {
         </div>
 
         {/* Fixed container for mobile */}
-        <div className="pt-16 h-full w-full overflow-x-auto">
+        <div className="pt-16 h-full w-full overflow-x-auto board-container">
           <div className="flex items-start p-4 sm:p-6 space-x-4 sm:space-x-6 min-w-max">
             <SortableContext items={boardData.map(list => list.id)} strategy={horizontalListSortingStrategy}>
               {boardData.map((list) => (
@@ -206,11 +192,11 @@ const Board = () => {
         {activeItem?.type === "Card" ? (
           <Card
             card={activeItem.data}
-            wrapperClassName="transform rotate-3 shadow-2xl border-2 border-primary/50"
+            wrapperClassName="transform rotate-3 shadow-2xl border-2 border-primary/50 drag-overlay"
           />
         ) : null}
         {activeItem?.type === "List" ? (
-          <div className="w-72 h-full opacity-90">
+          <div className="w-72 h-full opacity-90 drag-overlay">
             <List list={activeItem.data} />
           </div>
         ) : null}

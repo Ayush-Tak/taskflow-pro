@@ -69,12 +69,12 @@ html, body {
 
 /* Mobile touch optimizations */
 * {
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* Specific touch handling for drag elements */
 [data-dnd-kit-draggable] {
-  touch-action: none;
+  touch-action: pan-x pan-y;
 }
 
 /* Prevent text selection during drag */
@@ -83,28 +83,18 @@ html, body {
   -webkit-user-select: none;
 }
 
-/* Prevent mobile scroll interference with drag */
-.dndkit-dragging {
-  touch-action: none !important;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Improve mobile dragging experience */
-[data-dnd-kit-draggable] {
-  touch-action: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Disable scroll during drag - more aggressive */
+/* Only disable vertical scroll during drag, allow horizontal */
 body.dragging {
-  overflow: hidden !important;
-  touch-action: none !important;
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Allow horizontal scrolling in the board container */
+.board-container {
+  touch-action: pan-x;
+}
+
+/* Prevent vertical scroll on drag overlay */
+.drag-overlay {
+  touch-action: none;
 }
