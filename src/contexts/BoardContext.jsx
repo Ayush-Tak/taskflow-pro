@@ -10,7 +10,6 @@ const reducer = (state, action) => {
       return [...state, action.payload];
     case "REMOVE_LIST":
       return state.filter((list) => list.id !== action.payload);
-    // Add these cases to your reducer
     case "EDIT_LIST_TITLE":
       return state.map((list) =>
         list.id === action.payload.listID
