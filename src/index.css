@@ -77,3 +77,23 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* Prevent mobile scroll interference with drag */
+.dndkit-dragging {
+  touch-action: none !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve mobile dragging experience */
+[data-dnd-kit-draggable] {
+  touch-action: manipulation;
+}
+
+/* Disable scroll during drag */
+body.dragging {
+  overflow: hidden;
+  touch-action: none;
+}

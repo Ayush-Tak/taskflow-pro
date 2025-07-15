@@ -25,22 +25,26 @@ const Board = () => {
   const [activeItem, setActiveItem] = useState(null);
 
   const sensors = useSensors(
-    // Touch sensor for mobile devices
+    // Touch sensor for mobile devices with longer delay
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200,
-        tolerance: 8,
+        delay: 300,
+        tolerance: 10,
       },
     }),
     // Pointer sensor for desktop
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10,
+        delay: 100,
       },
     })
   );
 
   const handleDragStart = (event) => {
+    // Add dragging class to body for mobile
+    document.body.classList.add('dragging');
+    
     const { active } = event;
     const { id } = active;
     const isList = boardData.some((list) => list.id === id);
@@ -64,6 +68,9 @@ const Board = () => {
   };
 
   const handleDragEnd = (event) => {
+    // Remove dragging class from body
+    document.body.classList.remove('dragging');
+    
     const { active, over } = event;
     setActiveItem(null);
     if (!over) return;
@@ -113,6 +120,12 @@ const Board = () => {
     setIsAddingList(false);
   };
 
+  const handleDragCancel = () => {
+    // Clean up dragging state
+    document.body.classList.remove('dragging');
+    setActiveItem(null);
+  };
+
   const handleCancelListAdd = () => {
     setNewListTitle("");
     setIsAddingList(false);
@@ -123,6 +136,7 @@ const Board = () => {
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div className="relative h-screen bg-background text-foreground">
         {/* Header with subtle secondary background */}
