@@ -8,7 +8,10 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 import List from "./List";
 import Card from "./Card";
@@ -32,10 +35,10 @@ const Board = () => {
   const handleDragStart = (event) => {
     const { active } = event;
     const { id } = active;
-    const isList = boardData.some(list => list.id === id);
+    const isList = boardData.some((list) => list.id === id);
     if (isList) {
-      const list = boardData.find(list => list.id === id);
-      setActiveItem({ type: 'List', data: list });
+      const list = boardData.find((list) => list.id === id);
+      setActiveItem({ type: "List", data: list });
       return;
     }
     let card = null;
@@ -48,7 +51,7 @@ const Board = () => {
       }
     });
     if (card) {
-      setActiveItem({ type: 'Card', data: card, listID });
+      setActiveItem({ type: "Card", data: card, listID });
     }
   };
 
@@ -59,7 +62,7 @@ const Board = () => {
     const activeId = active.id;
     const overId = over.id;
     if (activeId === overId) return;
-    const isListDrag = activeItem?.type === 'List';
+    const isListDrag = activeItem?.type === "List";
     if (isListDrag) {
       const oldIndex = boardData.findIndex((list) => list.id === activeId);
       const newIndex = boardData.findIndex((list) => list.id === overId);
@@ -75,7 +78,8 @@ const Board = () => {
       list.cards.some((card) => card.id === activeId)
     );
     const destList = boardData.find(
-      (list) => list.id === overId || list.cards.some((card) => card.id === overId)
+      (list) =>
+        list.id === overId || list.cards.some((card) => card.id === overId)
     );
     if (!sourceList || !destList) return;
     const isDroppingOnCard = destList.cards.some((card) => card.id === overId);
@@ -121,8 +125,11 @@ const Board = () => {
           </div>
         </div>
 
-        <div className="pt-16 h-full flex items-start overflow-x-auto p-6 space-x-6 max-w-full">
-          <SortableContext items={boardData.map(list => list.id)} strategy={horizontalListSortingStrategy}>
+        <div className="pt-16 h-full flex items-start overflow-x-auto p-4 sm:p-6 space-x-4 sm:space-x-6 min-w-0">
+          <SortableContext
+            items={boardData.map((list) => list.id)}
+            strategy={horizontalListSortingStrategy}
+          >
             {boardData.map((list) => (
               <List key={list.id} list={list} />
             ))}
@@ -142,10 +149,17 @@ const Board = () => {
                 className="w-full p-3 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               />
               <div className="flex space-x-2">
-                <button type="submit" className="flex-1 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors">
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors"
+                >
                   Add List
                 </button>
-                <button type="button" onClick={handleCancelListAdd} className="w-12 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+                <button
+                  type="button"
+                  onClick={handleCancelListAdd}
+                  className="w-12 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                >
                   ❌
                 </button>
               </div>
@@ -155,16 +169,21 @@ const Board = () => {
               onClick={() => setIsAddingList(true)}
               className="w-72 flex-shrink-0 p-4 bg-secondary/50 border-2 border-dashed border-muted rounded-lg flex items-center justify-center cursor-pointer hover:bg-secondary/80 hover:border-primary/50 transition-all duration-200 group"
             >
-              <span className="font-bold text-muted-foreground group-hover:text-primary transition-colors">Add another list +</span>
+              <span className="font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                Add another list +
+              </span>
             </div>
           )}
         </div>
       </div>
       <DragOverlay>
-        {activeItem?.type === 'Card' ? (
-          <Card card={activeItem.data} wrapperClassName="transform rotate-3 shadow-2xl border-2 border-primary/50" />
+        {activeItem?.type === "Card" ? (
+          <Card
+            card={activeItem.data}
+            wrapperClassName="transform rotate-3 shadow-2xl border-2 border-primary/50"
+          />
         ) : null}
-        {activeItem?.type === 'List' ? (
+        {activeItem?.type === "List" ? (
           <div className="w-72 h-full opacity-90">
             <List list={activeItem.data} />
           </div>

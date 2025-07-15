@@ -38,3 +38,12 @@
   --color-destructive: #f87462;
   --color-destructive-foreground: #ffffff;
 }
+
+body {
+  overflow-x: hidden;
+}
+
+html, body {
+  max-width: 100%;
+  min-width: 0;
+}
