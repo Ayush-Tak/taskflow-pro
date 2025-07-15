@@ -121,7 +121,7 @@ const Board = () => {
           </div>
         </div>
 
-        <div className="pt-16 h-full flex items-start overflow-x-auto p-6 space-x-6">
+        <div className="pt-16 h-full flex items-start overflow-x-auto p-6 space-x-6 max-w-full">
           <SortableContext items={boardData.map(list => list.id)} strategy={horizontalListSortingStrategy}>
             {boardData.map((list) => (
               <List key={list.id} list={list} />
