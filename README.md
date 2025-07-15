@@ -1,6 +1,7 @@
 # 🚀 Trello Clone
 
 A modern, responsive Trello clone built with React and featuring drag-and-drop functionality, theme switching, and beautiful randomized list colors.
+[LIVE DEMO](https://trello-clone-five-peach.vercel.app/)
 
 ## ✨ Features
 
