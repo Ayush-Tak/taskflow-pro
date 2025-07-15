@@ -25,23 +25,16 @@ const Board = () => {
   const [activeItem, setActiveItem] = useState(null);
 
   const sensors = useSensors(
-    // Try touch sensor first with very specific settings
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    }),
-    // Fallback to pointer sensor
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3,
+        distance: 5,
+        delay: 250,
       },
     })
   );
 
   const handleDragStart = (event) => {
-    // Add dragging class to body for mobile (only disable vertical scroll)
+    // Add dragging class to body for mobile
     document.body.classList.add('dragging');
 
     const { active } = event;
