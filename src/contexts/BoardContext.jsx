@@ -24,7 +24,10 @@ const reducer = (state, action) => {
       return { ...state, lists: [...state.lists, action.payload] };
 
     case "DELETE_LIST":
-      return { ...state, lists: state.lists.filter((list) => list.id !== action.payload.listID) };
+      return {
+        ...state,
+        lists: state.lists.filter((list) => list.id !== action.payload.listID),
+      };
 
     case "EDIT_LIST_TITLE":
       return {
@@ -112,7 +115,9 @@ const reducer = (state, action) => {
         if (list.id === destListId) {
           let newCards;
           if (overCardId) {
-            const overIndex = list.cards.findIndex((card) => card.id === overCardId);
+            const overIndex = list.cards.findIndex(
+              (card) => card.id === overCardId
+            );
             newCards = [...list.cards];
             newCards.splice(overIndex, 0, foundCard);
           } else {
@@ -138,6 +143,33 @@ const reducer = (state, action) => {
     // Label operations
     case "ADD_LABEL":
       return { ...state, labels: [...state.labels, action.payload] };
+
+    case "REMOVE_LABEL":
+      return {
+        ...state,
+        labels: state.labels.filter(
+          (label) => label.id !== action.payload.labelID
+        ),
+        lists: state.lists.map((list) => ({
+          ...list,
+          cards: list.cards.map((card) => ({
+            ...card,
+            labelIds: (card.labelIds || []).filter(
+              (id) => id !== action.payload.labelID
+            ),
+          })),
+        })),
+      };
+
+    case "EDIT_LABEL":
+      return {
+        ...state,
+        labels: state.labels.map((label) => {
+          label.id === action.payload.labelID
+            ? { ...label, ...action.payload.updatedLabel }
+            : label;
+        }),
+      };
 
     case "ADD_LABEL_TO_CARD": {
       const { listID, cardID, labelID } = action.payload;
@@ -169,46 +201,50 @@ const reducer = (state, action) => {
  * Contains a tutorial list with example cards explaining how to use the app
  */
 const initialBoardData = {
-  labels:[
-    {id: 'label-1',color: 'blue', name: 'Tutorial'},
-    {id: 'label-2',color: 'green', name: 'Tutorial'},
+  labels: [
+    { id: "label-1", color: "red", name: "#Important" },
+    { id: "label-2", color: "yellow", name: "#Optional" },
+    { id: "label-3", color: "green", name: "#Done"},
+    {id : "label-4", color:"blue", name:"#Missed"},
   ],
   lists: [
-  {
-    id: "list-1",
-    title: "How to Use",
-    cards: [
-      {
-        id: "card-1",
-        title: "How Add cards?",
-        description: "Click on add cards to add new cards in the list",
-        labelIds:["label-1", "label-2"],
-      },
-      {
-        id: "card-2",
-        title: "How Add List",
-        description: "Click on add new list to add lists",
-        labelIds:["label-1",],
-      },
-      {
-        id: "card-4",
-        title: "How to Delete Card",
-        description: "Click on the card to delete it",
-      },
-      {
-        id: "card-5",
-        title: "How to Drag and Drop Card",
-        description:
-          "Click and hold the card to drag it to another list or position",
-      },
-      {
-        id: "card-3",
-        title: "How to Edit Card",
-        description: "Click on the card to edit its title and description",
-      },
-    ],
-  },
-]
+    {
+      id: "list-1",
+      title: "How to Use",
+      cards: [
+        {
+          id: "card-1",
+          title: "How Add cards?",
+          description: "Click on add cards to add new cards in the list",
+          labelIds: ["label-1", "label-2"],
+        },
+        {
+          id: "card-2",
+          title: "How Add List",
+          description: "Click on add new list to add lists",
+          labelIds: ["label-1"],
+        },
+        {
+          id: "card-4",
+          title: "How to Delete Card",
+          description: "Click on the card to delete it",
+          labelIds: ["label-3"]
+        },
+        {
+          id: "card-5",
+          title: "How to Drag and Drop Card",
+          description:
+            "Click and hold the card to drag it to another list or position",
+        },
+        {
+          id: "card-3",
+          title: "How to Edit Card",
+          description: "Click on the card to edit its title and description",
+          labelIds:["label-4"]
+        },
+      ],
+    },
+  ],
 };
 
 /**
@@ -224,7 +260,16 @@ const loadInitialState = () => {
     if (serializedState === null) {
       return initialBoardData;
     }
-    return JSON.parse(serializedState);
+    const parsed = JSON.parse(serializedState);
+    // MIGRATION: If old or invalid data shape, reset to initialBoardData
+    if (
+      typeof parsed !== "object" ||
+      !Array.isArray(parsed.lists) ||
+      !Array.isArray(parsed.labels)
+    ) {
+      return initialBoardData;
+    }
+    return parsed;
   } catch (error) {
     console.error("Error loading board data:", error);
     return initialBoardData;
