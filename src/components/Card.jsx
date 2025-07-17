@@ -1,65 +1,44 @@
-import { useBoard } from "../contexts/BoardContext";
-
 import { useState } from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useBoard } from "../contexts/BoardContext";
+import { useCardDragAndDrop } from "../hooks/useCardDragAndDrop";
+import { createCardHandlers } from "../handlers/cardHandlers";
 
+/**
+ * Card Component
+ * Represents a single card within a list in the Trello board
+ * Provides drag-and-drop functionality and modal editing capabilities
+ *
+ * @param {Object} props - Component props
+ * @param {Object} props.card - The card object containing id, title, and description
+ * @param {string} props.card.id - Unique identifier for the card
+ * @param {string} props.card.title - Display title of the card
+ * @param {string} props.card.description - Optional description text
+ * @param {string} props.listID - ID of the parent list containing this card
+ * @param {string} props.wrapperClassName - Additional CSS classes for styling
+ * @returns {JSX.Element} Rendered card component with modal
+ */
 const Card = ({ card, listID, wrapperClassName = "" }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: card.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
+  // Get dispatch function from board context for state updates
   const { dispatch } = useBoard();
 
+  // Initialize drag-and-drop functionality for this card
+  const { attributes, listeners, setNodeRef, style, isDragging } = useCardDragAndDrop(card.id);
+
+  // Local state for modal visibility and editing
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Local state for edited card title (used in modal)
   const [editedCardTitle, setEditedCardTitle] = useState(card.title);
+
+  // Local state for edited description (used in modal)
   const [editedDescription, setEditedDescription] = useState(card.description);
 
-  const handleDeleteCard = () => {
-    dispatch({ type: "REMOVE_CARD", payload: { listID, cardID: card.id } });
-  };
-
-  const handleEditCardDetails = (e) => {
-    e.preventDefault();
-    if (editedCardTitle.trim() === "" || editedDescription.trim() === "") {
-      setEditedCardTitle(card.title);
-      setEditedDescription(card.description);
-    } else {
-      dispatch({
-        type: "EDIT_CARD",
-        payload: {
-          listID: listID,
-          cardID: card.id,
-          newCardTitle: editedCardTitle.trim(),
-          newDescription: editedDescription.trim(),
-        },
-      });
-    }
-    setIsModalOpen(false);
-  };
-
-  const handleCloseModal = () => {
-    setEditedCardTitle(card.title);
-    setEditedDescription(card.description);
-    setIsModalOpen(false);
-  };
+  // Create handler functions with proper closure over card data and dispatch
+  const { handleDeleteCard, handleEditCardDetails, handleCloseModal } = createCardHandlers(card, listID, dispatch);
 
   return (
     <>
-      {/* Card preview */}
+      {/* Card Preview - the main card display that's draggable and clickable */}
       <div
         ref={setNodeRef}
         style={style}
@@ -76,14 +55,19 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
         `}
         onClick={() => setIsModalOpen(true)}
       >
+        {/* Card title - primary text content */}
         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors leading-snug">
           {card.title}
         </h3>
+
+        {/* Card description - optional secondary text */}
         {card.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {card.description}
           </p>
         )}
+
+        {/* Card footer - visual indicator and hint text */}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center space-x-1">
             <div className="w-2 h-2 bg-primary/60 rounded-full"></div>
@@ -92,28 +76,30 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
         </div>
       </div>
 
+      {/* Card Edit Modal - shown when isModalOpen is true */}
       {isModalOpen && (
         <>
-          {/* Backdrop */}
+          {/* Modal backdrop - darkens background and closes modal on click */}
           <div
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 transition-opacity"
-            onClick={handleCloseModal}
+            onClick={handleCloseModal(setEditedCardTitle, setEditedDescription, setIsModalOpen)}
           />
 
-          {/* Modal Panel */}
+          {/* Modal panel - main modal container */}
           <div
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            onClick={handleCloseModal}
+            onClick={handleCloseModal(setEditedCardTitle, setEditedDescription, setIsModalOpen)}
           >
+            {/* Modal content - prevents click propagation to backdrop */}
             <div
               onClick={(e) => e.stopPropagation()}
               className="bg-card border-2 border-border rounded-xl shadow-2xl p-6 max-w-md w-full transform transition-all duration-300 hover:scale-[1.02] relative"
             >
-              {/* Modal Header */}
+              {/* Modal header - contains title and close button */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
                 <h2 className="text-lg font-bold text-card-foreground">Edit Card</h2>
                 <button
-                  onClick={handleCloseModal}
+                  onClick={handleCloseModal(setEditedCardTitle, setEditedDescription, setIsModalOpen)}
                   className="text-2xl text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-muted rounded-full"
                   aria-label="Close modal"
                 >
@@ -121,8 +107,9 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
                 </button>
               </div>
 
-              <form onSubmit={handleEditCardDetails} className="space-y-5">
-                {/* Title */}
+              {/* Edit form - allows updating card title and description */}
+              <form onSubmit={handleEditCardDetails(editedCardTitle, editedDescription, setIsModalOpen)} className="space-y-5">
+                {/* Title input field */}
                 <div>
                   <label className="block text-sm font-semibold mb-3 uppercase tracking-wide text-primary">
                     Card Title
@@ -135,7 +122,7 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
                   />
                 </div>
 
-                {/* Description */}
+                {/* Description textarea field */}
                 <div>
                   <label className="block text-sm font-semibold mb-3 uppercase tracking-wide text-primary">
                     Description
@@ -148,8 +135,9 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
                   />
                 </div>
 
-                {/* Actions */}
+                {/* Modal action buttons */}
                 <div className="flex justify-end space-x-3 pt-4">
+                  {/* Delete button - removes the card from the list */}
                   <button
                     type="button"
                     onClick={handleDeleteCard}
@@ -157,6 +145,8 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
                   >
                     Delete
                   </button>
+
+                  {/* Save button - updates card with edited values */}
                   <button
                     type="submit"
                     className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors duration-200 shadow-sm hover:shadow-md"

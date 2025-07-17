@@ -1,206 +1,87 @@
-import Card from "./Card";
-import { useBoard } from "../contexts/BoardContext";
-import { CSS } from "@dnd-kit/utilities";
 import { useState, useMemo } from "react";
-import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { v4 as uuidv4 } from "uuid";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useBoard } from "../contexts/BoardContext";
+import { useListDragAndDrop } from "../hooks/useListDragAndDrop";
+import { createListHandlers } from "../handlers/listHandlers";
+import { getListColorIndex, getListColorSet } from "../utils/listColors";
+import Card from "./Card";
 
+/**
+ * List Component
+ * Represents a single list in the Trello board
+ * Contains a header, cards container, and add card functionality
+ * Supports drag-and-drop for reordering lists and contains droppable area for cards
+ *
+ * @param {Object} props - Component props
+ * @param {Object} props.list - The list object containing id, title, and cards
+ * @param {string} props.list.id - Unique identifier for the list
+ * @param {string} props.list.title - Display title of the list
+ * @param {Array} props.list.cards - Array of card objects in this list
+ * @returns {JSX.Element} Rendered list component
+ */
 const List = ({ list }) => {
+  // Get dispatch function from board context
   const { dispatch } = useBoard();
-  const { setNodeRef: setDroppableNodeRef } = useDroppable({ id: list.id });
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setSortableNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: list.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  // Initialize drag-and-drop functionality for this list
+  const { combineRefs, style, attributes, listeners, isDragging } = useListDragAndDrop(list.id);
 
-  const combineRefs = (node) => {
-    setDroppableNodeRef(node);
-    setSortableNodeRef(node);
-  };
+  // Local state for list functionality
+  const [isAddingCard, setIsAddingCard] = useState(false);      // Toggle for add card form
+  const [newCardTitle, setNewCardTitle] = useState("");         // Input value for new card
+  const [isEditingTitle, setIsEditingTitle] = useState(false);  // Toggle for title editing
+  const [editedTitle, setEditedTitle] = useState(list.title);   // Input value for edited title
 
-  const listColors = useMemo(() => [
-    // Blues
-    {
-      light: { bg: '#e3f2fd', border: '#2196f3', text: '#1565c0' },
-      dark: { bg: '#1a237e', border: '#64b5f6', text: '#90caf9' }
-    },
-    // Greens
-    {
-      light: { bg: '#e8f5e8', border: '#4caf50', text: '#2e7d32' },
-      dark: { bg: '#1b5e20', border: '#81c784', text: '#a5d6a7' }
-    },
-    // Oranges
-    {
-      light: { bg: '#fff3e0', border: '#ff9800', text: '#f57c00' },
-      dark: { bg: '#e65100', border: '#ffb74d', text: '#ffcc02' }
-    },
-    // Purples
-    {
-      light: { bg: '#f3e5f5', border: '#9c27b0', text: '#7b1fa2' },
-      dark: { bg: '#4a148c', border: '#ba68c8', text: '#ce93d8' }
-    },
-    // Teals
-    {
-      light: { bg: '#e0f2f1', border: '#009688', text: '#00695c' },
-      dark: { bg: '#004d40', border: '#4db6ac', text: '#80cbc4' }
-    },
-    // Cyans
-    {
-      light: { bg: '#e1f5fe', border: '#00bcd4', text: '#0097a7' },
-      dark: { bg: '#006064', border: '#4dd0e1', text: '#80deea' }
-    },
-    // Light Greens
-    {
-      light: { bg: '#f1f8e9', border: '#8bc34a', text: '#558b2f' },
-      dark: { bg: '#33691e', border: '#aed581', text: '#c5e1a5' }
-    },
-    // Pinks
-    {
-      light: { bg: '#fce4ec', border: '#e91e63', text: '#c2185b' },
-      dark: { bg: '#880e4f', border: '#f06292', text: '#f8bbd9' }
-    },
-    // Indigos
-    {
-      light: { bg: '#e8eaf6', border: '#3f51b5', text: '#303f9f' },
-      dark: { bg: '#1a237e', border: '#7986cb', text: '#9fa8da' }
-    },
-    // Lime
-    {
-      light: { bg: '#f9fbe7', border: '#cddc39', text: '#827717' },
-      dark: { bg: '#827717', border: '#dce775', text: '#f0f4c3' }
-    },
-    // Amber
-    {
-      light: { bg: '#fff8e1', border: '#ffc107', text: '#ff8f00' },
-      dark: { bg: '#ff6f00', border: '#ffca28', text: '#fff176' }
-    },
-    // Brown
-    {
-      light: { bg: '#efebe9', border: '#795548', text: '#5d4037' },
-      dark: { bg: '#3e2723', border: '#a1887f', text: '#bcaaa4' }
-    },
-  ], []);
+  // Color theming - memoized for performance
+  const colorIndex = useMemo(() => getListColorIndex(list.id), [list.id]);
+  const colorSet = useMemo(() => getListColorSet(list.id), [list.id]);
 
-  // Get consistent color for this list based on its ID
-  const listColorSet = useMemo(() => {
-    const hash = list.id.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    return listColors[Math.abs(hash) % listColors.length];
-  }, [list.id, listColors]);
+  // Get configured handlers for list actions
+  const { handleAddCard, handleEditTitle, handleDeleteList } = createListHandlers(list, dispatch);
 
+  // Extract card IDs for sortable context
   const cardIds = list.cards.map((card) => card.id);
-  const [isAddingCard, setIsAddingCard] = useState(false);
-  const [newCardTitle, setNewCardTitle] = useState("");
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(list.title);
-
-  const handleAddCard = (e) => {
-    e.preventDefault();
-    if (newCardTitle.trim() === "") return;
-
-    const newCard = {
-      id: uuidv4(),
-      title: newCardTitle,
-      description: "",
-    };
-    dispatch({
-      type: "ADD_CARD",
-      payload: { listID: list.id, card: newCard },
-    });
-    setNewCardTitle("");
-    setIsAddingCard(false);
-  };
-
-  const handleEditTitle = (e) => {
-    e.preventDefault();
-    if (editedTitle.trim() === "") {
-      setEditedTitle(list.title);
-    } else {
-      dispatch({
-        type: "EDIT_LIST_TITLE",
-        payload: { listID: list.id, newTitle: editedTitle.trim() },
-      });
-    }
-    setIsEditingTitle(false);
-  };
-
-  const handleDeleteList = () => {
-    if (window.confirm("Are you sure you want to delete this list and all its cards?")) {
-      dispatch({
-        type: "DELETE_LIST",
-        payload: { listID: list.id },
-      });
-    }
-  };
 
   return (
     <div ref={combineRefs} style={style} className="w-72 flex-shrink-0">
       <div
-        className={`flex flex-col h-full rounded-lg shadow-lg border-2 transition-all duration-200 ${isDragging ? 'shadow-2xl' : 'hover:shadow-xl'}`}
+        className={`flex flex-col h-full rounded-lg shadow-lg border-2 transition-all duration-200 ${
+          isDragging ? 'shadow-2xl' : 'hover:shadow-xl'
+        }`}
         style={{
-          backgroundColor: `var(--list-bg-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length})`,
-          borderColor: isDragging ?
-            `var(--list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0)) % listColors.length})` :
-            'var(--color-border)'
+          backgroundColor: `var(--list-bg-${colorIndex})`,
+          borderColor: isDragging ? `var(--list-border-${colorIndex})` : 'var(--color-border)'
         }}
       >
-        {/* List Header */}
+        {/* List Header - contains title, card count, and delete button */}
         <div
           className="p-4 flex justify-between items-center rounded-t-lg border-b"
           style={{
-            backgroundColor: `var(--list-bg-${Math.abs(list.id.split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0)) % listColors.length})`,
-            borderBottomColor: `var(--list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0)) % listColors.length})`
+            backgroundColor: `var(--list-bg-${colorIndex})`,
+            borderBottomColor: `var(--list-border-${colorIndex})`
           }}
         >
+          {/* Title Section - toggles between display and edit mode */}
           {isEditingTitle ? (
-            <form onSubmit={handleEditTitle} className="flex-1 mr-2">
+            // Edit mode - inline form for title editing
+            <form onSubmit={handleEditTitle(editedTitle, setEditedTitle, setIsEditingTitle)} className="flex-1 mr-2">
               <input
                 type="text"
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                onBlur={handleEditTitle}
+                onBlur={handleEditTitle(editedTitle, setEditedTitle, setIsEditingTitle)}
                 autoFocus
                 className="w-full bg-input text-foreground border border-border rounded px-2 py-1 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-all"
               />
             </form>
           ) : (
+            // Display mode - shows title with drag handle
             <h2
               {...attributes}
               {...listeners}
               className="font-bold cursor-grab flex-1"
               style={{
-                color: `var(--list-text-${Math.abs(list.id.split('').reduce((a, b) => {
-                  a = ((a << 5) - a) + b.charCodeAt(0);
-                  return a & a;
-                }, 0)) % listColors.length})`
+                color: `var(--list-text-${colorIndex})`
               }}
               onDoubleClick={() => setIsEditingTitle(true)}
             >
@@ -208,19 +89,20 @@ const List = ({ list }) => {
             </h2>
           )}
 
+          {/* Header Actions - card count and delete button */}
           <div className="flex items-center space-x-2">
+            {/* Card count badge */}
             <span
               className="text-xs px-2 py-1 rounded-full font-medium"
               style={{
-                backgroundColor: `var(--list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-                  a = ((a << 5) - a) + b.charCodeAt(0);
-                  return a & a;
-                }, 0)) % listColors.length})`,
+                backgroundColor: `var(--list-border-${colorIndex})`,
                 color: 'white'
               }}
             >
               {list.cards.length}
             </span>
+
+            {/* Delete list button */}
             <button
               onClick={handleDeleteList}
               className="text-muted-foreground hover:text-destructive transition-colors p-1"
@@ -231,13 +113,16 @@ const List = ({ list }) => {
           </div>
         </div>
 
-        {/* Cards Container */}
+        {/* Cards Container - scrollable area containing all cards */}
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-[100px] bg-card/50">
+          {/* Sortable context for card reordering */}
           <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
             {list.cards.map((card) => (
               <Card key={card.id} card={card} listID={list.id} />
             ))}
           </SortableContext>
+
+          {/* Empty state - shown when list has no cards */}
           {list.cards.length === 0 && (
             <div className="text-center py-8">
               <p className="text-sm text-muted-foreground">No cards yet</p>
@@ -245,22 +130,17 @@ const List = ({ list }) => {
           )}
         </div>
 
-        {/* Add Card Section */}
+        {/* Add Card Section - footer with add card form or button */}
         <div
           className="p-3 rounded-b-lg border-t"
           style={{
-            backgroundColor: `var(--list-bg-${Math.abs(list.id.split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0)) % listColors.length})`,
-            borderTopColor: `var(--list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0)) % listColors.length})`
+            backgroundColor: `var(--list-bg-${colorIndex})`,
+            borderTopColor: `var(--list-border-${colorIndex})`
           }}
         >
           {isAddingCard ? (
-            <form onSubmit={handleAddCard} className="space-y-2">
+            // Add Card Form
+            <form onSubmit={handleAddCard(newCardTitle, setNewCardTitle, setIsAddingCard)} className="space-y-2">
               <textarea
                 placeholder="Enter a title for this card..."
                 value={newCardTitle}
@@ -274,10 +154,7 @@ const List = ({ list }) => {
                   type="submit"
                   className="flex-1 py-2 rounded-md text-white font-medium transition-colors hover:opacity-90"
                   style={{
-                    backgroundColor: `var(--list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-                      a = ((a << 5) - a) + b.charCodeAt(0);
-                      return a & a;
-                    }, 0)) % listColors.length})`
+                    backgroundColor: `var(--list-border-${colorIndex})`
                   }}
                 >
                   Add Card
@@ -292,6 +169,7 @@ const List = ({ list }) => {
               </div>
             </form>
           ) : (
+            // Add Card Button
             <button
               onClick={() => setIsAddingCard(true)}
               className="w-full p-3 text-left rounded-md border border-dashed border-muted hover:border-primary/50 bg-card hover:bg-card/80 text-card-foreground transition-colors"
@@ -302,36 +180,18 @@ const List = ({ list }) => {
         </div>
       </div>
 
-      {/* Inject CSS variables for this list's colors */}
+      {/* Dynamic CSS Variables - injects list-specific colors into CSS */}
       <style jsx>{`
         :root {
-          --list-bg-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.light.bg};
-          --list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.light.border};
-          --list-text-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.light.text};
+          --list-bg-${colorIndex}: ${colorSet.light.bg};
+          --list-border-${colorIndex}: ${colorSet.light.border};
+          --list-text-${colorIndex}: ${colorSet.light.text};
         }
 
         .dark {
-          --list-bg-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.dark.bg};
-          --list-border-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.dark.border};
-          --list-text-${Math.abs(list.id.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-          }, 0)) % listColors.length}: ${listColorSet.dark.text};
+          --list-bg-${colorIndex}: ${colorSet.dark.bg};
+          --list-border-${colorIndex}: ${colorSet.dark.border};
+          --list-text-${colorIndex}: ${colorSet.dark.text};
         }
       `}</style>
     </div>

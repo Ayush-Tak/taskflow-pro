@@ -1,15 +1,35 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 
+/**
+ * Board Context
+ * Provides global state management for the Trello board application
+ * Manages lists, cards, and their operations through a centralized reducer
+ */
+
+// Create the context for board state management
 // eslint-disable-next-line react-refresh/only-export-components
 export const BoardContext = createContext();
 
-// Reducer function
+/**
+ * Board Reducer
+ * Handles all state transitions for the board including:
+ * - List operations (add, remove, edit, delete, reorder)
+ * - Card operations (add, remove, edit, move between lists)
+ * - Drag and drop state updates
+ *
+ * @param {Array} state - Current array of lists
+ * @param {Object} action - Action object with type and payload
+ * @returns {Array} New state array after applying the action
+ */
 const reducer = (state, action) => {
   switch (action.type) {
+    // List operations
     case "ADD_LIST":
       return [...state, action.payload];
+
     case "REMOVE_LIST":
       return state.filter((list) => list.id !== action.payload);
+
     case "EDIT_LIST_TITLE":
       return state.map((list) =>
         list.id === action.payload.listID
@@ -19,6 +39,8 @@ const reducer = (state, action) => {
 
     case "DELETE_LIST":
       return state.filter((list) => list.id !== action.payload.listID);
+
+    // Card operations
     case "ADD_CARD":
       return state.map((list) => {
         if (list.id === action.payload.listID) {
@@ -29,6 +51,7 @@ const reducer = (state, action) => {
         }
         return list;
       });
+
     case "REMOVE_CARD":
       return state.map((list) => {
         if (list.id === action.payload.listID) {
@@ -41,6 +64,7 @@ const reducer = (state, action) => {
         }
         return list;
       });
+
     case "EDIT_CARD":
       return state.map((list) => {
         if (list.id === action.payload.listID) {
@@ -58,6 +82,8 @@ const reducer = (state, action) => {
         }
         return list;
       });
+
+    // Drag and drop operations
     case "MOVE_CARD": {
       const { cardId, sourceListId, destListId, overCardId } = action.payload;
       let foundCard;
@@ -109,7 +135,12 @@ const reducer = (state, action) => {
       return state;
   }
 };
-// Initial board data
+
+/**
+ * Initial Board Data
+ * Default data structure for the board when no saved data exists
+ * Contains a tutorial list with example cards explaining how to use the app
+ */
 const initialBoardData = [
   {
     id: "list-1",
@@ -145,6 +176,13 @@ const initialBoardData = [
   },
 ];
 
+/**
+ * Load Initial State
+ * Attempts to load saved board data from localStorage
+ * Falls back to initial tutorial data if no saved data exists
+ *
+ * @returns {Array} Array of lists with their cards
+ */
 const loadInitialState = () => {
   try {
     const serializedState = localStorage.getItem("boardData");
@@ -158,9 +196,20 @@ const loadInitialState = () => {
   }
 };
 
+/**
+ * Board Provider Component
+ * Provides board state and dispatch function to all child components
+ * Automatically saves state changes to localStorage for persistence
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to wrap with context
+ * @returns {JSX.Element} Provider component
+ */
 export const BoardProvider = ({ children }) => {
+  // Initialize state with useReducer, loading from localStorage
   const [boardData, dispatch] = useReducer(reducer, loadInitialState());
 
+  // Save state to localStorage whenever it changes
   useEffect(() => {
     try {
       const serializedState = JSON.stringify(boardData);
@@ -177,6 +226,14 @@ export const BoardProvider = ({ children }) => {
   );
 };
 
+/**
+ * useBoard Hook
+ * Custom hook to access board context
+ * Provides boardData and dispatch function to consuming components
+ *
+ * @returns {Object} Context value containing boardData and dispatch
+ * @throws {Error} If used outside of BoardProvider
+ */
 // eslint-disable-next-line react-refresh/only-export-components
 export const useBoard = () => {
   const context = useContext(BoardContext);
