@@ -77,6 +77,7 @@ export const createCardHandlers = (card, listID, dispatch) => {
     setIsModalOpen(false);
   };
 
+
   return {
     handleDeleteCard,       // Handler for deleting the card
     handleEditCardDetails,  // Handler for editing card details

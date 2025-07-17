@@ -12,6 +12,8 @@ import Label from "./Label";
 const Card = ({ card, listID, wrapperClassName = "" }) => {
   // Get dispatch function from board context for state updates
   const { dispatch } = useBoard();
+  const { boardData } = useBoard();
+  const globalLabels = boardData.labels;
 
   // Initialize drag-and-drop functionality for this card
   const { attributes, listeners, setNodeRef, style, isDragging } = useCardDragAndDrop(card.id);
@@ -62,11 +64,10 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
         {/* Card footer - visual indicator and hint text */}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center space-x-1">
-            {card.labels &&(
-              card.labels.map((label) => (
-                <Label key={label.id} label={label} />
-              ))
-            )}
+            {card.labelIds && card.labelIds.map((labelId) => {
+              const label = globalLabels.find((l) => l.id === labelId);
+              return label ? (<Label key={label.id} color={label.color} name={label.name} />) : null;
+            })}
           </div>
         </div>
       </div>

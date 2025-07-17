@@ -52,9 +52,9 @@ const Board = () => {
           <div className="flex items-start p-6 space-x-6 min-w-max">
 
             {/* Sortable context for list reordering */}
-            <SortableContext items={boardData.map(list => list.id)} strategy={horizontalListSortingStrategy}>
+            <SortableContext items={boardData.lists.map(list => list.id)} strategy={horizontalListSortingStrategy}>
               {/* Render each list */}
-              {boardData.map((list) => (
+              {boardData.lists.map((list) => (
                 <List key={list.id} list={list} />
               ))}
             </SortableContext>

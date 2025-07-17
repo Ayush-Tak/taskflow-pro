@@ -21,71 +21,80 @@ const reducer = (state, action) => {
   switch (action.type) {
     // List operations
     case "ADD_LIST":
-      return [...state, action.payload];
-
-    case "REMOVE_LIST":
-      return state.filter((list) => list.id !== action.payload);
-
-    case "EDIT_LIST_TITLE":
-      return state.map((list) =>
-        list.id === action.payload.listID
-          ? { ...list, title: action.payload.newTitle }
-          : list
-      );
+      return { ...state, lists: [...state.lists, action.payload] };
 
     case "DELETE_LIST":
-      return state.filter((list) => list.id !== action.payload.listID);
+      return { ...state, lists: state.lists.filter((list) => list.id !== action.payload.listID) };
+
+    case "EDIT_LIST_TITLE":
+      return {
+        ...state,
+        lists: state.lists.map((list) =>
+          list.id === action.payload.listID
+            ? { ...list, title: action.payload.newTitle }
+            : list
+        ),
+      };
 
     // Card operations
     case "ADD_CARD":
-      return state.map((list) => {
-        if (list.id === action.payload.listID) {
-          return {
-            ...list,
-            cards: [...list.cards, action.payload.card],
-          };
-        }
-        return list;
-      });
+      return {
+        ...state,
+        lists: state.lists.map((list) => {
+          if (list.id === action.payload.listID) {
+            return {
+              ...list,
+              cards: [...list.cards, action.payload.card],
+            };
+          }
+          return list;
+        }),
+      };
 
     case "REMOVE_CARD":
-      return state.map((list) => {
-        if (list.id === action.payload.listID) {
-          return {
-            ...list,
-            cards: list.cards.filter(
-              (card) => card.id !== action.payload.cardID
-            ),
-          };
-        }
-        return list;
-      });
+      return {
+        ...state,
+        lists: state.lists.map((list) => {
+          if (list.id === action.payload.listID) {
+            return {
+              ...list,
+              cards: list.cards.filter(
+                (card) => card.id !== action.payload.cardID
+              ),
+            };
+          }
+          return list;
+        }),
+      };
 
     case "EDIT_CARD":
-      return state.map((list) => {
-        if (list.id === action.payload.listID) {
-          const updatedCards = list.cards.map((card) => {
-            if (card.id === action.payload.cardID) {
-              return {
-                ...card,
-                title: action.payload.newCardTitle,
-                description: action.payload.newDescription,
-              };
-            }
-            return card;
-          });
-          return { ...list, cards: updatedCards };
-        }
-        return list;
-      });
+      return {
+        ...state,
+        lists: state.lists.map((list) => {
+          if (list.id === action.payload.listID) {
+            const updatedCards = list.cards.map((card) => {
+              if (card.id === action.payload.cardID) {
+                return {
+                  ...card,
+                  title: action.payload.newCardTitle,
+                  description: action.payload.newDescription,
+                };
+              }
+              return card;
+            });
+            return { ...list, cards: updatedCards };
+          }
+          return list;
+        }),
+      };
 
-    // Drag and drop operations
+    // Drag and drop: Move Card
     case "MOVE_CARD": {
       const { cardId, sourceListId, destListId, overCardId } = action.payload;
       let foundCard;
 
-      // Find and remove the card from the source list
-      const stateWithoutCard = state.map((list) => {
+      // Remove card from source list
+      const listsWithoutCard = state.lists.map((list) => {
         if (list.id === sourceListId) {
           foundCard = list.cards.find((card) => card.id === cardId);
           return {
@@ -96,35 +105,57 @@ const reducer = (state, action) => {
         return list;
       });
 
-      // If the card is not found, return the original state
       if (!foundCard) return state;
 
-      // Add the card to the destination list in the correct position
-      return stateWithoutCard.map((list) => {
+      // Insert card into destination list at correct position
+      const newLists = listsWithoutCard.map((list) => {
         if (list.id === destListId) {
-          // If dropping on another card, find its index
+          let newCards;
           if (overCardId) {
-            const overIndex = list.cards.findIndex(
-              (card) => card.id === overCardId
-            );
-            // Insert the card at that index
-            const newCards = [...list.cards];
+            const overIndex = list.cards.findIndex((card) => card.id === overCardId);
+            newCards = [...list.cards];
             newCards.splice(overIndex, 0, foundCard);
-            return { ...list, cards: newCards };
+          } else {
+            newCards = [...list.cards, foundCard];
           }
-          // Otherwise, add to the end
-          return { ...list, cards: [...list.cards, foundCard] };
+          return { ...list, cards: newCards };
         }
         return list;
       });
+
+      return { ...state, lists: newLists };
     }
 
+    // Drag and drop: Move List
     case "MOVE_LIST": {
       const { sourceIndex, destinationIndex } = action.payload;
-      const updatedLists = Array.from(state);
+      const updatedLists = Array.from(state.lists);
       const [movedList] = updatedLists.splice(sourceIndex, 1);
       updatedLists.splice(destinationIndex, 0, movedList);
-      return updatedLists;
+      return { ...state, lists: updatedLists };
+    }
+
+    // Label operations
+    case "ADD_LABEL":
+      return { ...state, labels: [...state.labels, action.payload] };
+
+    case "ADD_LABEL_TO_CARD": {
+      const { listID, cardID, labelID } = action.payload;
+      return {
+        ...state,
+        lists: state.lists.map((list) =>
+          list.id === listID
+            ? {
+                ...list,
+                cards: list.cards.map((card) =>
+                  card.id === cardID && !(card.labelIds || []).includes(labelID)
+                    ? { ...card, labelIds: [...(card.labelIds || []), labelID] }
+                    : card
+                ),
+              }
+            : list
+        ),
+      };
     }
 
     default:
@@ -137,7 +168,12 @@ const reducer = (state, action) => {
  * Default data structure for the board when no saved data exists
  * Contains a tutorial list with example cards explaining how to use the app
  */
-const initialBoardData = [
+const initialBoardData = {
+  labels:[
+    {id: 'label-1',color: 'blue', name: 'Tutorial'},
+    {id: 'label-2',color: 'green', name: 'Tutorial'},
+  ],
+  lists: [
   {
     id: "list-1",
     title: "How to Use",
@@ -146,25 +182,13 @@ const initialBoardData = [
         id: "card-1",
         title: "How Add cards?",
         description: "Click on add cards to add new cards in the list",
-        labels: [
-          {
-            id: "label-1",
-            color: "blue",
-            name: "Tutorial",
-          }
-        ]
+        labelIds:["label-1", "label-2"],
       },
       {
         id: "card-2",
         title: "How Add List",
         description: "Click on add new list to add lists",
-        labels: [
-          {
-            id: "label-2",
-            color: "green",
-            name: "Tutorial",
-          }
-        ]
+        labelIds:["label-1",],
       },
       {
         id: "card-4",
@@ -184,7 +208,8 @@ const initialBoardData = [
       },
     ],
   },
-];
+]
+};
 
 /**
  * Load Initial State

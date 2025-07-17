@@ -18,7 +18,7 @@ export const useBoardDragAndDrop = (boardData, dispatch) => {
   const sensors = useSensors(
     useSensor(PointerSensor,{
       activationConstraint: {
-        delay: 210,
+        delay: 230,
         tolerance: 5, // 5px tolerance for drag (mobile friendly)
       },
     })
