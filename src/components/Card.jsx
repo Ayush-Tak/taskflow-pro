@@ -3,19 +3,11 @@ import { useBoard } from "../contexts/BoardContext";
 import { useCardDragAndDrop } from "../hooks/useCardDragAndDrop";
 import { createCardHandlers } from "../handlers/cardHandlers";
 
+import Label from "./Label";
 /**
  * Card Component
  * Represents a single card within a list in the Trello board
  * Provides drag-and-drop functionality and modal editing capabilities
- *
- * @param {Object} props - Component props
- * @param {Object} props.card - The card object containing id, title, and description
- * @param {string} props.card.id - Unique identifier for the card
- * @param {string} props.card.title - Display title of the card
- * @param {string} props.card.description - Optional description text
- * @param {string} props.listID - ID of the parent list containing this card
- * @param {string} props.wrapperClassName - Additional CSS classes for styling
- * @returns {JSX.Element} Rendered card component with modal
  */
 const Card = ({ card, listID, wrapperClassName = "" }) => {
   // Get dispatch function from board context for state updates
@@ -70,8 +62,11 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
         {/* Card footer - visual indicator and hint text */}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-primary/60 rounded-full"></div>
-            <span className="text-xs text-muted-foreground">Click to edit</span>
+            {card.labels &&(
+              card.labels.map((label) => (
+                <Label key={label.id} label={label} />
+              ))
+            )}
           </div>
         </div>
       </div>

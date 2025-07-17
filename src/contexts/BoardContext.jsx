@@ -16,10 +16,6 @@ export const BoardContext = createContext();
  * - List operations (add, remove, edit, delete, reorder)
  * - Card operations (add, remove, edit, move between lists)
  * - Drag and drop state updates
- *
- * @param {Array} state - Current array of lists
- * @param {Object} action - Action object with type and payload
- * @returns {Array} New state array after applying the action
  */
 const reducer = (state, action) => {
   switch (action.type) {
@@ -150,11 +146,25 @@ const initialBoardData = [
         id: "card-1",
         title: "How Add cards?",
         description: "Click on add cards to add new cards in the list",
+        labels: [
+          {
+            id: "label-1",
+            color: "blue",
+            name: "Tutorial",
+          }
+        ]
       },
       {
         id: "card-2",
         title: "How Add List",
         description: "Click on add new list to add lists",
+        labels: [
+          {
+            id: "label-2",
+            color: "green",
+            name: "Tutorial",
+          }
+        ]
       },
       {
         id: "card-4",
@@ -201,9 +211,6 @@ const loadInitialState = () => {
  * Provides board state and dispatch function to all child components
  * Automatically saves state changes to localStorage for persistence
  *
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - Child components to wrap with context
- * @returns {JSX.Element} Provider component
  */
 export const BoardProvider = ({ children }) => {
   // Initialize state with useReducer, loading from localStorage
