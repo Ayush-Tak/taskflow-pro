@@ -39,8 +39,8 @@ export const createCardHandlers = (card, listID, dispatch) => {
   const handleEditCardDetails = (editedCardTitle, editedDescription, setIsModalOpen) => (e) => {
     e.preventDefault();
 
-    // Validate input - both title and description must have content
-    if (editedCardTitle.trim() === "" || editedDescription.trim() === "") {
+    // Validate input - only title is required
+    if (editedCardTitle.trim() === "") {
       return;
     }
 

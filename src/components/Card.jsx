@@ -27,6 +27,11 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
   // Local state for edited description (used in modal)
   const [editedDescription, setEditedDescription] = useState(card.description);
 
+  // Local state for creating new labels
+  const [isCreatingLabel, setIsCreatingLabel] = useState(false);
+  const [newLabelName, setNewLabelName] = useState("");
+  const [newLabelColor, setNewLabelColor] = useState("blue");
+
   // Create handler functions with proper closure over card data and dispatch
   const { handleDeleteCard, handleEditCardDetails, handleCloseModal } = createCardHandlers(card, listID, dispatch);
 
@@ -61,13 +66,21 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
           </p>
         )}
 
+        {/* Card labels - wrap and display properly */}
+        {card.labelIds && card.labelIds.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {card.labelIds.map((labelId) => {
+              const label = globalLabels.find((l) => l.id === labelId);
+              return label ? (<Label key={label.id} label={label} />) : null;
+            })}
+          </div>
+        )}
+
         {/* Card footer - visual indicator and hint text */}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center space-x-1">
-            {card.labelIds && card.labelIds.map((labelId) => {
-              const label = globalLabels.find((l) => l.id === labelId);
-              return label ? (<Label key={label.id} color={label.color} name={label.name} />) : null;
-            })}
+            <div className="w-2 h-2 bg-primary/60 rounded-full"></div>
+            <span className="text-xs text-muted-foreground">Click to edit</span>
           </div>
         </div>
       </div>
@@ -129,6 +142,138 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
                     onChange={(e) => setEditedDescription(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all h-32 resize-none"
                   />
+                </div>
+                {/* Labels section - allows adding/removing labels */}
+                <div className="">
+                  <label className="block text-sm font-semibold mb-3 uppercase tracking-wide text-primary">
+                    Selected Labels
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {card.labelIds?.map(labelId =>{
+                      const label = boardData.labels.find(l => l.id === labelId);
+                      return label ? (
+                        <div key={label.id} className="flex items-center">
+                          <Label
+                            label={label}
+                            showRemove={true}
+                            onRemove={() => {
+                              dispatch({type: 'REMOVE_LABEL_FROM_CARD', payload: { listID, cardID: card.id, labelID: label.id }});
+                            }}
+                          />
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+
+                </div>
+
+                {/* Available Labels Section */}
+                <div className="">
+                  <label className="block text-sm font-semibold mb-3 uppercase tracking-wide text-primary">
+                    Available Labels
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {boardData.labels
+                      .filter(label => !(card.labelIds || []).includes(label.id))
+                      .map(label => (
+                        <button
+                          key={label.id}
+                          type="button"
+                          className="opacity-60 hover:opacity-100 transition"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            dispatch({
+                              type: "ADD_LABEL_TO_CARD",
+                              payload: { listID, cardID: card.id, labelID: label.id }
+                            });
+                          }}
+                        >
+                          <Label label={label} />
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Create New Label Section */}
+                <div className="">
+                  <label className="block text-sm font-semibold mb-3 uppercase tracking-wide text-primary">
+                    Create New Label
+                  </label>
+                  {!isCreatingLabel ? (
+                    <button
+                      type="button"
+                      className="px-3 py-2 text-sm border-2 border-dashed border-muted-foreground/50 rounded-lg hover:border-primary transition-colors text-muted-foreground hover:text-primary"
+                      onClick={() => setIsCreatingLabel(true)}
+                    >
+                      + Add New Label
+                    </button>
+                  ) : (
+                    <div className="space-y-3 p-3 border-2 border-border rounded-lg bg-muted/10">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Label Name</label>
+                        <input
+                          type="text"
+                          value={newLabelName}
+                          onChange={(e) => setNewLabelName(e.target.value)}
+                          placeholder="Enter label name..."
+                          className="w-full px-2 py-1 text-sm border border-border rounded bg-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Color</label>
+                        <select
+                          value={newLabelColor}
+                          onChange={(e) => setNewLabelColor(e.target.value)}
+                          className="w-full px-2 py-1 text-sm border border-border rounded bg-input"
+                        >
+                          <option value="red">Red</option>
+                          <option value="yellow">Yellow</option>
+                          <option value="green">Green</option>
+                          <option value="blue">Blue</option>
+                          <option value="purple">Purple</option>
+                          <option value="pink">Pink</option>
+                          <option value="indigo">Indigo</option>
+                          <option value="gray">Gray</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (newLabelName.trim()) {
+                              const newLabel = {
+                                id: `label-${Date.now()}`,
+                                color: newLabelColor,
+                                text: newLabelName.trim()  // Use 'text' instead of 'name' for consistency
+                              };
+                              dispatch({ type: "ADD_LABEL", payload: newLabel });
+                              dispatch({
+                                type: "ADD_LABEL_TO_CARD",
+                                payload: { listID, cardID: card.id, labelID: newLabel.id }
+                              });
+                              setNewLabelName("");
+                              setIsCreatingLabel(false);
+                            }
+                          }}
+                        >
+                          Create & Add
+                        </button>
+                        <button
+                          type="button"
+                          className="px-3 py-1 text-xs bg-muted text-muted-foreground rounded hover:bg-muted/80"
+                          onClick={() => {
+                            setIsCreatingLabel(false);
+                            setNewLabelName("");
+                            setNewLabelColor("blue");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Modal action buttons */}
