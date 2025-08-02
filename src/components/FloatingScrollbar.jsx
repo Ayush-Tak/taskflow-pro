@@ -16,15 +16,15 @@ const FloatingScrollbar = ({ targetElementRef }) => {
 
     const updateThumb = () => {
       const { scrollLeft, scrollWidth, clientWidth } = element;
-      
+
       // Check if scrolling is needed
       if (scrollWidth <= clientWidth) {
         setShowScrollbar(false);
         return;
       }
-      
+
       setShowScrollbar(true);
-      
+
       // Calculate thumb size and position
       const thumbWidth = Math.max((clientWidth / scrollWidth) * 100, 10);
       const maxLeft = 100 - thumbWidth;
@@ -50,21 +50,21 @@ const FloatingScrollbar = ({ targetElementRef }) => {
   const handleMouseDown = (e) => {
     if (!targetElementRef?.current) return;
     e.preventDefault();
-    
+
     const startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
     const startScrollLeft = targetElementRef.current.scrollLeft;
-    
+
     setIsDragging(true);
 
     const handleMouseMove = (e) => {
       if (!targetElementRef?.current || !trackRef.current) return;
-      
+
       const currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
       const deltaX = currentX - startX;
       const trackWidth = trackRef.current.offsetWidth;
       const element = targetElementRef.current;
       const scrollableWidth = element.scrollWidth - element.clientWidth;
-      
+
       const newScrollLeft = startScrollLeft + (deltaX / trackWidth) * scrollableWidth;
       element.scrollLeft = Math.max(0, Math.min(scrollableWidth, newScrollLeft));
     };
@@ -85,13 +85,13 @@ const FloatingScrollbar = ({ targetElementRef }) => {
 
   const handleTrackClick = (e) => {
     if (!targetElementRef?.current || !trackRef.current || isDragging) return;
-    
+
     const rect = trackRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = clickX / rect.width;
     const element = targetElementRef.current;
     const scrollableWidth = element.scrollWidth - element.clientWidth;
-    
+
     element.scrollLeft = percentage * scrollableWidth;
   };
 
