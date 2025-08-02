@@ -36,14 +36,27 @@ const FloatingScrollbar = ({ targetElementRef }) => {
       });
     };
 
-    element.addEventListener('scroll', updateThumb);
-    const resizeObserver = new ResizeObserver(updateThumb);
+    // Throttled update function for better performance
+    let rafId = null;
+    const throttledUpdateThumb = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        updateThumb();
+        rafId = null;
+      });
+    };
+
+    element.addEventListener('scroll', throttledUpdateThumb, { passive: true });
+    const resizeObserver = new ResizeObserver(throttledUpdateThumb);
     resizeObserver.observe(element);
     updateThumb();
 
     return () => {
-      element.removeEventListener('scroll', updateThumb);
+      element.removeEventListener('scroll', throttledUpdateThumb);
       resizeObserver.disconnect();
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
     };
   }, [targetElementRef]);
 
@@ -66,8 +79,11 @@ const FloatingScrollbar = ({ targetElementRef }) => {
       const element = targetElementRef.current;
       const scrollableWidth = element.scrollWidth - element.clientWidth;
 
-      const newScrollLeft = startScrollLeft + (deltaX / trackWidth) * scrollableWidth;
-      element.scrollLeft = Math.max(0, Math.min(scrollableWidth, newScrollLeft));
+      // Use requestAnimationFrame for smoother real-time updates
+      requestAnimationFrame(() => {
+        const newScrollLeft = startScrollLeft + (deltaX / trackWidth) * scrollableWidth;
+        element.scrollLeft = Math.max(0, Math.min(scrollableWidth, newScrollLeft));
+      });
     };
 
     const handleMouseUp = () => {

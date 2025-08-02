@@ -226,12 +226,12 @@
     opacity: 0.9;
     transform: scale(1.05); /* Slight scale feedback on touch */
   }
-  
+
   /* Ensure grabbing cursor during drag for the whole page */
   body.scrollbar-dragging {
     cursor: grabbing !important;
   }
-  
+
   body.scrollbar-dragging * {
     cursor: grabbing !important;
   }
