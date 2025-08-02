@@ -26,7 +26,7 @@ const FloatingScrollbar = ({ targetElementRef }) => {
       setShowScrollbar(true);
 
       // Calculate thumb size and position
-      const thumbWidth = Math.max((clientWidth / scrollWidth) * 100, 10);
+      const thumbWidth = Math.max((clientWidth / scrollWidth) * 100, 15); // Increased minimum for touch
       const maxLeft = 100 - thumbWidth;
       const thumbLeft = (scrollLeft / (scrollWidth - clientWidth)) * maxLeft;
 
@@ -55,6 +55,7 @@ const FloatingScrollbar = ({ targetElementRef }) => {
     const startScrollLeft = targetElementRef.current.scrollLeft;
 
     setIsDragging(true);
+    document.body.classList.add('scrollbar-dragging');
 
     const handleMouseMove = (e) => {
       if (!targetElementRef?.current || !trackRef.current) return;
@@ -71,6 +72,7 @@ const FloatingScrollbar = ({ targetElementRef }) => {
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      document.body.classList.remove('scrollbar-dragging');
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('touchmove', handleMouseMove);
@@ -109,6 +111,7 @@ const FloatingScrollbar = ({ targetElementRef }) => {
           style={{
             width: `${thumbData.width}%`,
             left: `${thumbData.left}%`,
+            cursor: isDragging ? 'grabbing' : 'grab',
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleMouseDown}
