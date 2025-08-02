@@ -164,11 +164,27 @@ const reducer = (state, action) => {
     case "EDIT_LABEL":
       return {
         ...state,
-        labels: state.labels.map((label) => {
-          label.id === action.payload.labelID
-            ? { ...label, ...action.payload.updatedLabel }
-            : label;
-        }),
+        labels: state.labels.map((label) =>
+          label.id === action.payload.labelId
+            ? { ...label, text: action.payload.text, color: action.payload.color }
+            : label
+        ),
+      };
+
+    case "DELETE_LABEL":
+      return {
+        ...state,
+        labels: state.labels.filter(label => label.id !== action.payload.labelId),
+        // Remove the label from all cards
+        lists: state.lists.map(list => ({
+          ...list,
+          cards: list.cards.map(card => ({
+            ...card,
+            labelIds: (card.labelIds || []).filter(id => id !== action.payload.labelId)
+          }))
+        })),
+        // Remove from active filters if present
+        activeFilters: (state.activeFilters || []).filter(id => id !== action.payload.labelId)
       };
 
     case "ADD_LABEL_TO_CARD": {
@@ -190,6 +206,43 @@ const reducer = (state, action) => {
       };
     }
 
+    case "REMOVE_LABEL_FROM_CARD": {
+      const { listID, cardID, labelID } = action.payload;
+      return {
+        ...state,
+        lists: state.lists.map((list) =>
+          list.id === listID
+            ? {
+                ...list,
+                cards: list.cards.map((card) =>
+                  card.id === cardID
+                    ? { ...card, labelIds: (card.labelIds || []).filter(id => id !== labelID) }
+                    : card
+                ),
+              }
+            : list
+        ),
+      };
+    }
+
+    // Filter operations
+    case "TOGGLE_LABEL_FILTER": {
+      const { labelId } = action.payload;
+      const isActive = (state.activeFilters || []).includes(labelId);
+      return {
+        ...state,
+        activeFilters: isActive
+          ? (state.activeFilters || []).filter(id => id !== labelId)
+          : [...(state.activeFilters || []), labelId]
+      };
+    }
+
+    case "CLEAR_ALL_FILTERS":
+      return {
+        ...state,
+        activeFilters: []
+      };
+
     default:
       return state;
   }
@@ -202,10 +255,10 @@ const reducer = (state, action) => {
  */
 const initialBoardData = {
   labels: [
-    { id: "label-1", color: "red", name: "#Important" },
-    { id: "label-2", color: "yellow", name: "#Optional" },
-    { id: "label-3", color: "green", name: "#Done"},
-    {id : "label-4", color:"blue", name:"#Missed"},
+    { id: "label-1", color: "red", text: "Important" },
+    { id: "label-2", color: "yellow", text: "Optional" },
+    { id: "label-3", color: "green", text: "Done"},
+    {id : "label-4", color:"blue", text:"Missed"},
   ],
   lists: [
     {
@@ -245,6 +298,8 @@ const initialBoardData = {
       ],
     },
   ],
+  // Filter state
+  activeFilters: [], // Array of label IDs to filter by
 };
 
 /**
@@ -268,6 +323,10 @@ const loadInitialState = () => {
       !Array.isArray(parsed.labels)
     ) {
       return initialBoardData;
+    }
+    // Add activeFilters if missing (for migration from older versions)
+    if (!parsed.activeFilters) {
+      parsed.activeFilters = [];
     }
     return parsed;
   } catch (error) {
