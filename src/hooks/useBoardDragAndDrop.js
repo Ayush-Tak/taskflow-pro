@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSensors, useSensor, PointerSensor } from "@dnd-kit/core";
+import { useSensors, useSensor, PointerSensor, TouchSensor } from "@dnd-kit/core";
 import { handleDragStart, handleDragEnd, handleDragCancel } from "../handlers/boardDNDHandlers";
 
 /**
@@ -14,12 +14,18 @@ export const useBoardDragAndDrop = (boardData, dispatch) => {
   // Track the currently dragged item (list or card) with its type and data
   const [activeItem, setActiveItem] = useState(null);
 
-  // Configure drag sensors for desktop use
+  // Configure drag sensors for both desktop and mobile use
   const sensors = useSensors(
-    useSensor(PointerSensor,{
+    useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 230,
-        tolerance: 5, // 5px tolerance for drag (mobile friendly)
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8, // Slightly higher tolerance for touch
       },
     })
   );
