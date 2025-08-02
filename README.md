@@ -181,29 +181,23 @@ src/
 - [x] **Enhanced Navigation**: Fixed header with improved visibility
 - [x] **Theme-Aware Labels**: Automatic color optimization for light/dark themes
 
-### 🔜 Planned Features
-- [ ] Card due dates with calendar integration
-- [ ] Search functionality across cards and labels
-- [ ] Card checklists with progress indicators
-- [ ] File attachments and image previews
-- [ ] Multiple boards with board switching
-- [ ] Export/import functionality (JSON/CSV)
-- [ ] Keyboard shortcuts for power users
-- [ ] Card templates and quick actions
 
 ## 📸 Screenshots
 
 ### Light Theme with Labels
-![Light Theme Labels](screenshots/light-theme-labels.png)
+![Light Theme Labels](screenshots/light-theme.png)
 
 ### Dark Theme with Filtering
-![Dark Theme Filtering](screenshots/dark-theme-filtering.png)
+![Dark Theme Filtering](screenshots/dark-theme.png)
 
 ### Labels Management Sidebar
 ![Labels Sidebar](screenshots/labels-sidebar.png)
 
 ### Drag & Drop with Labels
-![Drag and Drop Labels](screenshots/drag-drop-labels.png)
+![Drag and Drop Labels](screenshots/drag-drop.png)
+
+### Labels Filtering
+![Labels Filtering](screenshots/filter.png)
 
 
 ## 🤝 Contributing
