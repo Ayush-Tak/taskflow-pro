@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { useBoard } from "../contexts/BoardContext";
@@ -7,6 +7,7 @@ import { createBoardHandlers } from "../handlers/boardHandlers";
 import List from "./List";
 import Card from "./Card";
 import { ThemeToggleButton } from "./ThemeToggleButton";
+import LabelSidebar from "./LabelSidebar";
 
 
 /**
@@ -24,9 +25,45 @@ const Board = () => {
   // Local state for managing "Add List" form
   const [isAddingList, setIsAddingList] = useState(false);     // Toggle for showing add list form
   const [newListTitle, setNewListTitle] = useState("");        // Input value for new list title
+  const [isLabelSidebarOpen, setIsLabelSidebarOpen] = useState(false); // Toggle for label sidebar
 
   // Get configured handlers for board actions
   const { handleAddList, handleCancelListAdd } = createBoardHandlers(dispatch);
+
+  // Filter lists based on active label filters
+  const filteredBoardData = useMemo(() => {
+    console.log('Board filtering - activeFilters:', boardData.activeFilters);
+    console.log('Board filtering - total cards before filtering:',
+      boardData.lists.reduce((total, list) => total + list.cards.length, 0)
+    );
+
+    if (!boardData.activeFilters || boardData.activeFilters.length === 0) {
+      console.log('No active filters, returning original data');
+      return boardData;
+    }
+
+    const result = {
+      ...boardData,
+      lists: boardData.lists.map(list => ({
+        ...list,
+        cards: list.cards.filter(card => {
+          const hasMatchingLabel = boardData.activeFilters.some(filterId =>
+            card.labelIds && card.labelIds.includes(filterId)
+          );
+          if (hasMatchingLabel) {
+            console.log('Card matches filter:', card.title, card.labelIds);
+          }
+          return hasMatchingLabel;
+        })
+      }))
+    };
+
+    console.log('Board filtering - total cards after filtering:',
+      result.lists.reduce((total, list) => total + list.cards.length, 0)
+    );
+
+    return result;
+  }, [boardData]);
 
   return (
     // DndContext provides drag-and-drop functionality to all child components
@@ -37,61 +74,101 @@ const Board = () => {
       onDragCancel={onDragCancel}
     >
       {/* Main board container */}
-      <div className="relative h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground">
 
         {/* Fixed header bar */}
-        <div className="absolute top-0 left-0 right-0 h-16 bg-secondary/30 backdrop-blur-sm border-b border-border z-10">
+        <div className="fixed top-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-b border-border z-30 shadow-sm">
           <div className="flex items-center justify-between h-full px-6">
             <h1 className="text-xl font-bold text-primary">Trello Clone</h1>
-            <ThemeToggleButton />
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setIsLabelSidebarOpen(true)}
+                className={`px-4 py-2 rounded-md transition-colors flex items-center space-x-2 relative ${
+                  boardData.activeFilters && boardData.activeFilters.length > 0
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+                title="Manage Labels"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span>Labels</span>
+                {boardData.activeFilters && boardData.activeFilters.length > 0 && (
+                  <span className="bg-primary-foreground text-primary text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {boardData.activeFilters.length}
+                  </span>
+                )}
+              </button>
+              <ThemeToggleButton />
+            </div>
           </div>
         </div>
 
         {/* Scrollable board content area */}
-        <div className="pt-16 h-full w-full overflow-x-auto board-container">
-          <div className="flex items-start p-6 space-x-6 min-w-max">
-
-            {/* Sortable context for list reordering */}
-            <SortableContext items={boardData.lists.map(list => list.id)} strategy={horizontalListSortingStrategy}>
-              {/* Render each list */}
-              {boardData.lists.map((list) => (
-                <List key={list.id} list={list} />
-              ))}
-            </SortableContext>
-
-            {/* Add List Section - shows either form or button */}
-            {isAddingList ? (
-              // Add List Form
-              <form
-                onSubmit={handleAddList(newListTitle, setNewListTitle, setIsAddingList)}
-                className="w-72 flex-shrink-0 p-4 bg-secondary border-2 border-dashed border-primary/50 rounded-lg space-y-2 shadow-lg"
-              >
-                <input
-                  type="text"
-                  placeholder="Enter list title..."
-                  value={newListTitle}
-                  onChange={(e) => setNewListTitle(e.target.value)}
-                  autoFocus
-                  className="w-full p-3 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                />
-                <div className="flex space-x-2">
-                  <button type="submit" className="flex-1 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors">
-                    Add List
-                  </button>
-                  <button type="button" onClick={handleCancelListAdd(setNewListTitle, setIsAddingList)} className="w-12 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
-                    ❌
+        <div className="pt-24 pb-6 h-full w-full overflow-x-auto board-container">
+          <div className="px-6">
+            {/* Active Filter Indicator */}
+            {boardData.activeFilters && boardData.activeFilters.length > 0 && (
+              <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-primary">
+                    Filtering by {boardData.activeFilters.length} label{boardData.activeFilters.length > 1 ? 's' : ''}
+                  </span>
+                  <button
+                    onClick={() => setIsLabelSidebarOpen(true)}
+                    className="text-xs text-primary hover:text-primary/80 underline"
+                  >
+                    Manage filters
                   </button>
                 </div>
-              </form>
-            ) : (
-              // Add List Button
-              <div
-                onClick={() => setIsAddingList(true)}
-                className="w-72 flex-shrink-0 p-4 bg-secondary/50 border-2 border-dashed border-muted rounded-lg flex items-center justify-center cursor-pointer hover:bg-secondary/80 hover:border-primary/50 transition-all duration-200 group"
-              >
-                <span className="font-bold text-muted-foreground group-hover:text-primary transition-colors">Add another list +</span>
               </div>
             )}
+
+            {/* Board Lists */}
+            <div className="flex items-start space-x-6 min-w-max">
+              {/* Sortable context for list reordering */}
+              <SortableContext items={filteredBoardData.lists.map(list => list.id)} strategy={horizontalListSortingStrategy}>
+                {/* Render each list with filtered data */}
+                {filteredBoardData.lists.map((list) => (
+                  <List key={list.id} list={list} />
+                ))}
+              </SortableContext>
+
+              {/* Add List Section - shows either form or button */}
+              {isAddingList ? (
+                // Add List Form
+                <form
+                  onSubmit={handleAddList(newListTitle, setNewListTitle, setIsAddingList)}
+                  className="w-72 flex-shrink-0 p-4 bg-secondary border-2 border-dashed border-primary/50 rounded-lg space-y-2 shadow-lg"
+                >
+                  <input
+                    type="text"
+                    placeholder="Enter list title..."
+                    value={newListTitle}
+                    onChange={(e) => setNewListTitle(e.target.value)}
+                    autoFocus
+                    className="w-full p-3 border border-border rounded-md bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  />
+                  <div className="flex space-x-2">
+                    <button type="submit" className="flex-1 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors">
+                      Add List
+                    </button>
+                    <button type="button" onClick={handleCancelListAdd(setNewListTitle, setIsAddingList)} className="w-12 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+                      ❌
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                // Add List Button
+                <div
+                  onClick={() => setIsAddingList(true)}
+                  className="w-72 flex-shrink-0 p-4 bg-secondary/50 border-2 border-dashed border-muted rounded-lg flex items-center justify-center cursor-pointer hover:bg-secondary/80 hover:border-primary/50 transition-all duration-200 group"
+                >
+                  <span className="font-bold text-muted-foreground group-hover:text-primary transition-colors">Add another list +</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -113,6 +190,12 @@ const Board = () => {
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* Label Sidebar */}
+      <LabelSidebar
+        isOpen={isLabelSidebarOpen}
+        onClose={() => setIsLabelSidebarOpen(false)}
+      />
     </DndContext>
   );
 };
