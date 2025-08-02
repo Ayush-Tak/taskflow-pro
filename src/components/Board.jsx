@@ -106,7 +106,7 @@ const Board = () => {
         </div>
 
         {/* Scrollable board content area */}
-        <div className="pt-24 pb-6 h-full w-full overflow-x-auto board-container">
+        <div className="pt-24 pb-6 h-full w-full overflow-x-auto board-container touch-optimized">
           <div className="px-6">
             {/* Active Filter Indicator */}
             {boardData.activeFilters && boardData.activeFilters.length > 0 && (

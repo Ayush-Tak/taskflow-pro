@@ -40,19 +40,33 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
       {/* Card Preview - the main card display that's draggable and clickable */}
       <div
         ref={setNodeRef}
-        style={style}
+        style={{
+          ...style,
+          touchAction: 'none', // Prevent default touch behaviors
+        }}
         {...listeners}
         {...attributes}
         className={`
-          p-3 rounded-lg shadow-sm transition-all duration-200 cursor-pointer border-l-4 border-l-primary/50 group
+          p-3 rounded-lg shadow-sm transition-all duration-200 cursor-pointer border-l-4 border-l-primary/50 group sortable-card touch-optimized
           ${
             isDragging
-              ? "bg-muted border-2 border-dashed border-primary opacity-70 shadow-lg"
+              ? "bg-muted border-2 border-dashed border-primary opacity-70 shadow-lg dragging"
               : "bg-background hover:bg-secondary/30 border border-border hover:border-primary/50 hover:shadow-md"
           }
           ${wrapperClassName}
         `}
         onClick={() => setIsModalOpen(true)}
+        data-testid="drag-handle"
+        onTouchStart={(e) => {
+          // Prevent scrolling during potential drag
+          e.stopPropagation();
+        }}
+        onContextMenu={(e) => {
+          // Prevent context menu on mobile long press during drag
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
       >
         {/* Card title - primary text content */}
         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors leading-snug">

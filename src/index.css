@@ -123,3 +123,39 @@
 .label-border-unselected {
   border: 2px solid rgba(255,255,255,0.3) !important;
 }
+
+/* Mobile touch optimizations */
+@media (max-width: 768px) {
+  /* Better touch targets for mobile */
+  .board-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Improve drag handle visibility on mobile */
+  [data-testid="drag-handle"] {
+    padding: 0.75rem;
+    min-height: 44px; /* iOS accessibility guidelines */
+  }
+  
+  /* Better mobile card interactions */
+  .sortable-card {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Prevent context menu on long press during drag */
+  .dragging * {
+    pointer-events: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Enhanced touch interactions */
+  .touch-optimized {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

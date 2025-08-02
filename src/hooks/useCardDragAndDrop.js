@@ -19,6 +19,11 @@ export const useCardDragAndDrop = (cardId) => {
     isDragging,     // Boolean indicating if this card is being dragged
   } = useSortable({
     id: cardId,
+    // Enhanced transition for smoother mobile dragging
+    transition: {
+      duration: 200,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
   });
 
   // CSS transform string for drag animation
@@ -28,8 +33,20 @@ export const useCardDragAndDrop = (cardId) => {
   };
 
   return {
-    attributes,     // Accessibility attributes
-    listeners,      // Drag event listeners
+    attributes: {
+      ...attributes,
+      'data-testid': 'drag-handle',
+    },
+    listeners: {
+      ...listeners,
+      // Enhanced touch handling
+      onTouchStart: (e) => {
+        e.stopPropagation();
+        if (listeners?.onTouchStart) {
+          listeners.onTouchStart(e);
+        }
+      },
+    },     // Enhanced drag event listeners
     setNodeRef,     // Ref for the draggable element
     style,          // CSS styles for drag animation
     isDragging,     // Drag state indicator
