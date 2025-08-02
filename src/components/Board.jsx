@@ -169,7 +169,7 @@ const Board = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Mobile Scroll Hint - Only visible on mobile */}
             <div className="md:hidden mt-6 flex items-center justify-center text-muted-foreground">
               <div className="flex items-center space-x-2 px-4 py-2 bg-muted/30 rounded-full text-xs">

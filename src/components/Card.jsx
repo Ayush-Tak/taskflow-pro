@@ -40,10 +40,7 @@ const Card = ({ card, listID, wrapperClassName = "" }) => {
       {/* Card Preview - the main card display that's draggable and clickable */}
       <div
         ref={setNodeRef}
-        style={{
-          ...style,
-          touchAction: 'none', // Prevent default touch behaviors
-        }}
+        style={style}
         {...listeners}
         {...attributes}
         className={`
