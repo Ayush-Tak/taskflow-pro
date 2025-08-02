@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { useBoard } from "../contexts/BoardContext";
@@ -8,6 +8,7 @@ import List from "./List";
 import Card from "./Card";
 import { ThemeToggleButton } from "./ThemeToggleButton";
 import LabelSidebar from "./LabelSidebar";
+import FloatingScrollbar from "./FloatingScrollbar";
 
 
 /**
@@ -26,6 +27,9 @@ const Board = () => {
   const [isAddingList, setIsAddingList] = useState(false);     // Toggle for showing add list form
   const [newListTitle, setNewListTitle] = useState("");        // Input value for new list title
   const [isLabelSidebarOpen, setIsLabelSidebarOpen] = useState(false); // Toggle for label sidebar
+
+  // Ref for the board container to sync with floating scrollbar
+  const boardContainerRef = useRef(null);
 
   // Get configured handlers for board actions
   const { handleAddList, handleCancelListAdd } = createBoardHandlers(dispatch);
@@ -106,7 +110,7 @@ const Board = () => {
         </div>
 
         {/* Scrollable board content area */}
-        <div className="pt-24 pb-6 h-full w-full overflow-x-auto board-container touch-optimized">
+        <div ref={boardContainerRef} className="pt-24 pb-6 h-full w-full overflow-x-auto board-container touch-optimized">
           <div className="px-6">
             {/* Active Filter Indicator */}
             {boardData.activeFilters && boardData.activeFilters.length > 0 && (
@@ -169,15 +173,6 @@ const Board = () => {
                 </div>
               )}
             </div>
-
-            {/* Mobile Scroll Hint - Only visible on mobile */}
-            <div className="md:hidden mt-6 flex items-center justify-center text-muted-foreground">
-              <div className="flex items-center space-x-2 px-4 py-2 bg-muted/30 rounded-full text-xs">
-                <span>←</span>
-                <span>Scroll horizontally to see more lists</span>
-                <span>→</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -205,6 +200,9 @@ const Board = () => {
         isOpen={isLabelSidebarOpen}
         onClose={() => setIsLabelSidebarOpen(false)}
       />
+
+      {/* Floating Scrollbar for Mobile */}
+      <FloatingScrollbar targetElementRef={boardContainerRef} />
     </DndContext>
   );
 };
