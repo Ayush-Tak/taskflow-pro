@@ -118,9 +118,7 @@ const Board = () => {
           <div className="flex items-center justify-between h-full px-6">
             <div className="flex items-center space-x-3">
               {/* TaskFlow Pro logo/icon */}
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">TF</span>
-              </div>
+                <img src="/taskflow-icon.svg" alt="TaskFlow Pro" className="w-6 h-6" />
               <h1 className="text-xl font-bold text-primary">TaskFlow Pro</h1>
             </div>
             <div className="flex items-center space-x-3">
