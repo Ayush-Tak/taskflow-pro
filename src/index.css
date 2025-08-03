@@ -33,6 +33,20 @@
   --label-indigo: #4c6ef5;
   --label-lime: #9acd32;
   --label-gray: #838c91;
+
+  /* Task Status Colors */
+  --status-todo-bg: #f3f4f6;
+  --status-todo-text: #6b7280;
+  --status-due-today-bg: #fef2f2;
+  --status-due-today-text: #dc2626;
+  --status-this-week-bg: #fefce8;
+  --status-this-week-text: #ca8a04;
+  --status-later-bg: #eff6ff;
+  --status-later-text: #2563eb;
+  --status-done-bg: #f0fdf4;
+  --status-done-text: #16a34a;
+  --status-missed-bg: #faf5ff;
+  --status-missed-text: #9333ea;
 }
 
 /* Dark theme overrides */
@@ -65,6 +79,20 @@
   --label-indigo: #6c7ce0;
   --label-lime: #aed581;
   --label-gray: #a1a7aa;
+
+  /* Dark theme task status colors */
+  --status-todo-bg: #374151;
+  --status-todo-text: #d1d5db;
+  --status-due-today-bg: #7f1d1d;
+  --status-due-today-text: #fca5a5;
+  --status-this-week-bg: #78350f;
+  --status-this-week-text: #fcd34d;
+  --status-later-bg: #1e3a8a;
+  --status-later-text: #93c5fd;
+  --status-done-bg: #14532d;
+  --status-done-text: #86efac;
+  --status-missed-bg: #581c87;
+  --status-missed-text: #c4b5fd;
 }
 
 /* Basic desktop styles */
@@ -114,6 +142,14 @@
 .label-bg-indigo { background-color: var(--label-indigo); }
 .label-bg-lime { background-color: var(--label-lime); }
 .label-bg-gray { background-color: var(--label-gray); }
+
+/* Task Status utility classes */
+.status-todo { background-color: var(--status-todo-bg); color: var(--status-todo-text); }
+.status-due-today { background-color: var(--status-due-today-bg); color: var(--status-due-today-text); }
+.status-this-week { background-color: var(--status-this-week-bg); color: var(--status-this-week-text); }
+.status-later { background-color: var(--status-later-bg); color: var(--status-later-text); }
+.status-done { background-color: var(--status-done-bg); color: var(--status-done-text); }
+.status-missed { background-color: var(--status-missed-bg); color: var(--status-missed-text); }
 
 /* Border styles for color picker selection */
 .label-border-selected {
@@ -234,5 +270,50 @@
 
   body.scrollbar-dragging * {
     cursor: grabbing !important;
+  }
+
+  /* Enhanced modal experience for mobile */
+  .modal-container {
+    padding: 8px; /* Reduce padding on mobile for more content space */
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 2rem); /* Better mobile height calculation */
+    border-radius: 12px; /* Slightly less rounded on mobile */
+  }
+
+  /* Better mobile form elements */
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
+    min-height: 44px; /* iOS accessibility guidelines */
+  }
+
+  /* Enhanced zoom-out button for mobile navigation */
+  .zoom-out-hint {
+    position: fixed;
+    bottom: 80px; /* Above the floating scrollbar */
+    right: 16px;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    animation: pulseHint 2s infinite;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+  }
+
+  @keyframes pulseHint {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  /* Hide zoom hint when zoomed out */
+  .zoom-hint-hidden {
+    display: none;
   }
 }

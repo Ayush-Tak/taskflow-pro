@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-
+import { createTaskHandlers } from "../handlers/taskHandlers";
 /**
  * Board Context
  * Provides global state management for the Trello board application
@@ -242,6 +242,51 @@ const reducer = (state, action) => {
         ...state,
         activeFilters: []
       };
+    case "UPDATE_CARD_STATUS":
+      return{
+        ...state,
+        lists: state.lists.map(list => ({
+          ...list,
+          cards: list.cards.map(card =>
+            card.id === action.payload.cardId
+              ? {
+                ...card,
+                status: action.payload.status,
+                statusUpdatedAt: new Date().toISOString()
+              }
+              :card
+          )
+        }))
+      };
+
+      case "UPDATE_CARD_DUE_DATE":
+      return {
+        ...state,
+        lists:state.lists.map(list =>({
+          ...list,
+          cards: list.cards.map(card =>
+            card.id === action.payload.cardId
+              ? {
+                ...card,
+                dueDate: action.payload.dueDate,
+                status: action.payload.newStatus || card.status,
+              }
+              :card
+          )
+        }))
+      };
+
+      case "REFRESH_ALL_STATUSES":
+        return {
+          ...state,
+          lists: state.lists.map(list => ({
+            ...list,
+            cards: list.cards.map(card => ({
+              ...card,
+              status: action.payload.cardStatuses[card.id] || card.status,
+            }))
+          }))
+        };
 
     default:
       return state;
@@ -251,55 +296,147 @@ const reducer = (state, action) => {
 /**
  * Initial Board Data
  * Default data structure for the board when no saved data exists
- * Contains a tutorial list with example cards explaining how to use the app
+ * Contains comprehensive tutorial showcasing labels, task statuses, and due dates
  */
 const initialBoardData = {
   labels: [
-    { id: "label-1", color: "red", text: "Important" },
-    { id: "label-2", color: "yellow", text: "Optional" },
-    { id: "label-3", color: "green", text: "Done"},
-    {id : "label-4", color:"blue", text:"Missed"},
+    { id: "label-1", color: "red", text: "Priority" },
+    { id: "label-2", color: "blue", text: "Feature" },
+    { id: "label-3", color: "green", text: "Bug Fix" },
+    { id: "label-4", color: "purple", text: "Documentation" },
   ],
   lists: [
     {
       id: "list-1",
-      title: "How to Use",
+      title: "📚 Getting Started",
       cards: [
         {
           id: "card-1",
-          title: "How Add cards?",
-          description: "Click on add cards to add new cards in the list",
-          labelIds: ["label-1", "label-2"],
+          title: "Welcome to Your Trello Clone!",
+          description: "This board shows you all the features. Click on any card to edit it, add due dates, and assign labels.",
+          labelIds: ["label-4"],
+          status: "todo"
         },
         {
           id: "card-2",
-          title: "How Add List",
-          description: "Click on add new list to add lists",
-          labelIds: ["label-1"],
-        },
-        {
-          id: "card-4",
-          title: "How to Delete Card",
-          description: "Click on the card to delete it",
-          labelIds: ["label-3"]
-        },
-        {
-          id: "card-5",
-          title: "How to Drag and Drop Card",
-          description:
-            "Click and hold the card to drag it to another list or position",
+          title: "Understanding Task Status",
+          description: "Tasks automatically get status badges based on due dates:\n• Todo: No due date or future\n• Due Today: Due today (red)\n• This Week: Due in 1-7 days (yellow)\n• Later: Due beyond 7 days (blue)\n• Missed: Past due (purple)\n• Done: Manually completed (green)\n\nYou can only manually mark tasks as 'Done' - all other statuses are automatic!",
+          labelIds: ["label-4"],
+          status: "todo"
         },
         {
           id: "card-3",
-          title: "How to Edit Card",
-          description: "Click on the card to edit its title and description",
-          labelIds:["label-4"]
-        },
-      ],
+          title: "Working with Labels",
+          description: "Use labels to categorize tasks. Click the filter button in the header to filter by labels. You can create custom labels with different colors.",
+          labelIds: ["label-4", "label-2"],
+          status: "todo"
+        }
+      ]
     },
+    {
+      id: "list-2",
+      title: "📋 Try These Features",
+      cards: [
+        {
+          id: "card-4",
+          title: "Add a Due Date",
+          description: "Click this card and set a due date to see automatic status assignment in action!",
+          labelIds: ["label-2"],
+          status: "todo"
+        },
+        {
+          id: "card-5",
+          title: "Drag and Drop Cards",
+          description: "Try dragging this card to another list. Works on both desktop and mobile!",
+          labelIds: ["label-2"],
+          status: "todo"
+        },
+        {
+          id: "card-6",
+          title: "Create New Labels",
+          description: "Open this card and try creating a new label with your own color and name.",
+          labelIds: ["label-2"],
+          status: "todo"
+        },
+        {
+          id: "card-7",
+          title: "Filter by Labels",
+          description: "Click the label filter button in the header to see filtering in action.",
+          labelIds: ["label-2", "label-1"],
+          status: "todo"
+        }
+      ]
+    },
+    {
+      id: "list-3",
+      title: "🎯 Sample Tasks with Status",
+      cards: [
+        {
+          id: "card-8",
+          title: "High Priority Bug Fix",
+          description: "This card has a high priority label and shows how status works with due dates.",
+          labelIds: ["label-1", "label-3"],
+          status: "due-today",
+          dueDate: new Date().toISOString().split('T')[0] + "T00:00:00.000Z" // Today
+        },
+        {
+          id: "card-9",
+          title: "Feature Planning Meeting",
+          description: "This task is due this week and shows the yellow 'This Week' status.",
+          labelIds: ["label-2"],
+          status: "this-week",
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] + "T00:00:00.000Z" // 3 days from now
+        },
+        {
+          id: "card-10",
+          title: "Update Documentation",
+          description: "This task is due later and shows the blue 'Later' status.",
+          labelIds: ["label-4"],
+          status: "later",
+          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] + "T00:00:00.000Z" // 2 weeks from now
+        },
+        {
+          id: "card-11",
+          title: "Missed Deadline Example",
+          description: "This shows what happens when a task is past due - it gets purple 'Missed' status automatically.",
+          labelIds: ["label-1"],
+          status: "missed",
+          dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] + "T00:00:00.000Z" // 2 days ago
+        }
+      ]
+    },
+    {
+      id: "list-4",
+      title: "✅ Completed",
+      cards: [
+        {
+          id: "card-12",
+          title: "Setup Project Structure",
+          description: "This task is marked as done and keeps its green status regardless of due date. Notice the strikethrough and muted appearance.",
+          labelIds: ["label-3"],
+          status: "done",
+          dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] + "T00:00:00.000Z" // Yesterday
+        },
+        {
+          id: "card-13",
+          title: "Try Marking This Complete",
+          description: "Click the ○ button on this card to mark it as done, or use the completion button in the modal. This is the only status you can set manually!",
+          labelIds: ["label-2"],
+          status: "todo"
+        }
+      ]
+    }
   ],
   // Filter state
   activeFilters: [], // Array of label IDs to filter by
+  taskStatuses: [
+    { id: 'todo', name: 'To Do', color: 'gray' },
+    { id: 'due-today', name: 'Due Today', color: 'red' },
+    { id: 'this-week', name: 'This Week', color: 'yellow' },
+    { id: 'later', name: 'Later', color: 'blue' },
+    { id: 'done', name: 'Done', color: 'green' },
+    { id: 'missed', name: 'Missed', color: 'purple' }
+  ]
 };
 
 /**
@@ -316,7 +453,7 @@ const loadInitialState = () => {
       return initialBoardData;
     }
     const parsed = JSON.parse(serializedState);
-    // MIGRATION: If old or invalid data shape, reset to initialBoardData
+    // MIGRATION:
     if (
       typeof parsed !== "object" ||
       !Array.isArray(parsed.lists) ||
@@ -324,9 +461,18 @@ const loadInitialState = () => {
     ) {
       return initialBoardData;
     }
-    // Add activeFilters if missing (for migration from older versions)
     if (!parsed.activeFilters) {
       parsed.activeFilters = [];
+    }
+    if (!parsed.taskStatuses) {
+      parsed.taskStatuses = [
+        { id: 'todo', name: 'To Do', color: 'gray' },
+        { id: 'due-today', name: 'Due Today', color: 'red' },
+        { id: 'this-week', name: 'This Week', color: 'yellow' },
+        { id: 'later', name: 'Later', color: 'blue' },
+        { id: 'done', name: 'Done', color: 'green' },
+        { id: 'missed', name: 'Missed', color: 'purple' }
+      ];
     }
     return parsed;
   } catch (error) {
@@ -345,6 +491,16 @@ export const BoardProvider = ({ children }) => {
   // Initialize state with useReducer, loading from localStorage
   const [boardData, dispatch] = useReducer(reducer, loadInitialState());
 
+  // Set up an interval to refresh task statuses every hour
+  useEffect(() => {
+    const { handleRefreshAllStatuses } = createTaskHandlers(dispatch);
+
+    const interval = setInterval(() => {
+      handleRefreshAllStatuses(boardData);
+    }, 60 * 60 * 1000); // Every hour
+
+    return () => clearInterval(interval);
+  }, [boardData, dispatch]);
   // Save state to localStorage whenever it changes
   useEffect(() => {
     try {

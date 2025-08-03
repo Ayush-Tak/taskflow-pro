@@ -30,9 +30,6 @@ const LabelSidebar = ({ isOpen, onClose }) => {
 
   // Handle filter toggle
   const handleFilterToggle = (labelId) => {
-    console.log('Toggling filter for labelId:', labelId);
-    console.log('Current activeFilters:', boardData.activeFilters);
-
     dispatch({
       type: "TOGGLE_LABEL_FILTER",
       payload: { labelId }

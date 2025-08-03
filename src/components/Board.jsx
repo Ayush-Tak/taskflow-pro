@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { useBoard } from "../contexts/BoardContext";
@@ -9,6 +9,75 @@ import Card from "./Card";
 import { ThemeToggleButton } from "./ThemeToggleButton";
 import LabelSidebar from "./LabelSidebar";
 import FloatingScrollbar from "./FloatingScrollbar";
+
+/**
+ * Mobile Zoom Hint Component
+ * Shows a hint to users on mobile devices that they can zoom out for better navigation
+ */
+const MobileZoomHint = () => {
+  const [showHint, setShowHint] = useState(false);
+  const [isZoomedOut, setIsZoomedOut] = useState(false);
+
+  useEffect(() => {
+    // Only show on mobile devices
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return;
+
+    // Show hint after a brief delay
+    const showTimer = setTimeout(() => {
+      setShowHint(true);
+    }, 3000);
+
+    // Hide hint after user interaction or after 8 seconds
+    const hideTimer = setTimeout(() => {
+      setShowHint(false);
+    }, 11000);
+
+    // Monitor viewport changes to detect zoom
+    const handleResize = () => {
+      const zoomLevel = window.devicePixelRatio;
+      const viewportWidth = window.innerWidth;
+
+      // Consider zoomed out if viewport is wider than expected for mobile
+      const isZoomedOutNow = zoomLevel < 1 || viewportWidth > 768;
+      setIsZoomedOut(isZoomedOutNow);
+
+      if (isZoomedOutNow) {
+        setShowHint(false);
+      }
+    };
+
+    // Listen for viewport changes
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    // Initial check
+    handleResize();
+
+    // Hide hint on first touch
+    const handleFirstTouch = () => {
+      setShowHint(false);
+      document.removeEventListener('touchstart', handleFirstTouch);
+    };
+    document.addEventListener('touchstart', handleFirstTouch);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      document.removeEventListener('touchstart', handleFirstTouch);
+    };
+  }, []);
+
+  if (!showHint || isZoomedOut) return null;
+
+  return (
+    <div className="zoom-out-hint">
+      Pinch to zoom out for better view 🔍
+    </div>
+  );
+};
 
 
 /**
@@ -36,13 +105,7 @@ const Board = () => {
 
   // Filter lists based on active label filters
   const filteredBoardData = useMemo(() => {
-    console.log('Board filtering - activeFilters:', boardData.activeFilters);
-    console.log('Board filtering - total cards before filtering:',
-      boardData.lists.reduce((total, list) => total + list.cards.length, 0)
-    );
-
     if (!boardData.activeFilters || boardData.activeFilters.length === 0) {
-      console.log('No active filters, returning original data');
       return boardData;
     }
 
@@ -54,17 +117,10 @@ const Board = () => {
           const hasMatchingLabel = boardData.activeFilters.some(filterId =>
             card.labelIds && card.labelIds.includes(filterId)
           );
-          if (hasMatchingLabel) {
-            console.log('Card matches filter:', card.title, card.labelIds);
-          }
           return hasMatchingLabel;
         })
       }))
     };
-
-    console.log('Board filtering - total cards after filtering:',
-      result.lists.reduce((total, list) => total + list.cards.length, 0)
-    );
 
     return result;
   }, [boardData]);
@@ -203,6 +259,9 @@ const Board = () => {
 
       {/* Floating Scrollbar for Mobile */}
       <FloatingScrollbar targetElementRef={boardContainerRef} />
+
+      {/* Mobile Zoom Hint */}
+      <MobileZoomHint />
     </DndContext>
   );
 };
