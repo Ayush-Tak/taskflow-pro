@@ -1,7 +1,25 @@
 {
-  "name": "trello-clone",
+  "name": "taskflow-pro",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Intelligent Kanban board with smart task status management",
+  "keywords": [
+    "kanban",
+    "task-management",
+    "productivity",
+    "workflow",
+    "react"
+  ],
+  "author": "Ayush-Tak",
+  "license": "MIT",
+  "homepage": "https://taskflow-pro.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ayush-Tak/taskflow-pro"
+  },
+  "bugs": {
+    "url": "https://github.com/Ayush-Tak/taskflow-pro/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,6 +49,7 @@
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
+    "terser": "^5.43.1",
     "vite": "^7.0.4"
   }
 }

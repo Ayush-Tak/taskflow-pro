@@ -1,0 +1,27 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="url(#bg-gradient)"/>
+  
+  <!-- Abstract flow lines representing task flow -->
+  <g stroke="white" stroke-width="2" fill="none" stroke-linecap="round">
+    <!-- Top flow line -->
+    <path d="M6 10 L14 10 L16 12 L26 12" opacity="0.9"/>
+    <!-- Middle flow line -->
+    <path d="M6 16 L12 16 L14 18 L26 18" opacity="0.7"/>
+    <!-- Bottom flow line -->
+    <path d="M6 22 L10 22 L12 24 L26 24" opacity="0.5"/>
+  </g>
+  
+  <!-- Flow direction indicators (small circles) -->
+  <circle cx="24" cy="12" r="1.5" fill="white" opacity="0.9"/>
+  <circle cx="24" cy="18" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.5"/>
+</svg>

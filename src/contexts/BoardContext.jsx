@@ -1,9 +1,9 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { createTaskHandlers } from "../handlers/taskHandlers";
 /**
- * Board Context
- * Provides global state management for the Trello board application
- * Manages lists, cards, and their operations through a centralized reducer
+ * TaskFlow Pro Board Context
+ * Provides global state management for the intelligent kanban application
+ * Manages lists, cards, smart task statuses, and their operations through a centralized reducer
  */
 
 // Create the context for board state management
@@ -312,15 +312,15 @@ const initialBoardData = {
       cards: [
         {
           id: "card-1",
-          title: "Welcome to Your Trello Clone!",
-          description: "This board shows you all the features. Click on any card to edit it, add due dates, and assign labels.",
+          title: "Welcome to TaskFlow Pro!",
+          description: "This board demonstrates all the intelligent features. TaskFlow Pro automatically manages task statuses based on due dates while letting you manually mark tasks as complete. Click on any card to edit it, add due dates, and assign labels.",
           labelIds: ["label-4"],
           status: "todo"
         },
         {
           id: "card-2",
-          title: "Understanding Task Status",
-          description: "Tasks automatically get status badges based on due dates:\n• Todo: No due date or future\n• Due Today: Due today (red)\n• This Week: Due in 1-7 days (yellow)\n• Later: Due beyond 7 days (blue)\n• Missed: Past due (purple)\n• Done: Manually completed (green)\n\nYou can only manually mark tasks as 'Done' - all other statuses are automatic!",
+          title: "Smart Task Status System",
+          description: "TaskFlow Pro intelligently manages task statuses:\n• Todo: No due date or future\n• Due Today: Due today (red)\n• This Week: Due in 1-7 days (yellow)\n• Later: Due beyond 7 days (blue)\n• Missed: Past due (purple)\n• Done: Manually completed (green)\n\nYou can only manually mark tasks as 'Done' - all other statuses are calculated automatically based on due dates!",
           labelIds: ["label-4"],
           status: "todo"
         },

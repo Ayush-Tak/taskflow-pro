@@ -59,7 +59,7 @@ const FloatingZoomControls = () => {
 };
 /**
  * Main Board Component
- * The top-level component that renders the entire Trello board
+ * The top-level component that renders the TaskFlow Pro board
  * Manages the board layout, drag-and-drop context, and list creation
  */
 const Board = () => {
@@ -116,7 +116,13 @@ const Board = () => {
         {/* Fixed header bar */}
         <div className="fixed top-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-b border-border z-30 shadow-sm">
           <div className="flex items-center justify-between h-full px-6">
-            <h1 className="text-xl font-bold text-primary">Trello Clone</h1>
+            <div className="flex items-center space-x-3">
+              {/* TaskFlow Pro logo/icon */}
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">TF</span>
+              </div>
+              <h1 className="text-xl font-bold text-primary">TaskFlow Pro</h1>
+            </div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setIsLabelSidebarOpen(true)}
