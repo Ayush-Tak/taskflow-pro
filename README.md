@@ -1,8 +1,14 @@
-# 🚀 TaskFlow Pro
+# 🚀 TaskFlow Pro- **🎨 Visual St### 🎨 Design & ### 🏷️ Smart Labels SystemX
+## 🏆 Why Choose TaskFlow Pro?us Indicators**: Color-coded status system with professional design
+- **📅 Due Date Intelligence**: Smart categorization based on time remaining
 
-**Intelligent Kanban boards with smart task status management**
+### 🎨 Professional Design**Intelligent Kanban boards with smart task status management**
 
-TaskFlow Pro goes beyond traditional kanban tools by automatically managing task statuses based on due dates while preserving your manual completions. Built with modern React and featuring a mobile-first design.
+TaskFlow Pro goes beyond traditional kanban tools by automatically managing task statuses based on due dates while preserving your manual completions. Built with ## 📄 License
+
+MIT License - feel free to use for personal or commercial projects.
+
+## 🙏 Acknowledgmentsn React and featuring a mobile-first design.
 
 [🌟 **LIVE DEMO**](https://taskflow-pro.vercel.app/)
 
