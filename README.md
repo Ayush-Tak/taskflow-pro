@@ -88,10 +88,6 @@ npm run dev
 
 ## 📱 Screenshots
 
-### TaskFlow Pro Header with Smart Branding
-![TaskFlow Pro Header](screenshots/taskflow-header.png)
-*Features the new TaskFlow Pro logo and professional header design*
-
 ### Smart Task Status System
 ![Smart Status System](screenshots/smart-status-system.png)
 *Automatic status badges: Due Today (red), This Week (yellow), Later (blue), Done (green)*
@@ -104,7 +100,7 @@ npm run dev
 ![Mobile Features](screenshots/mobile-optimized.png)
 *Touch-friendly drag & drop, zoom controls, and floating scrollbar*
 
-### Dark Theme Excellence
+### Dark Theme
 ![Dark Theme](screenshots/dark-theme.png)
 *Professional dark mode with optimized contrast and modern design*
 
