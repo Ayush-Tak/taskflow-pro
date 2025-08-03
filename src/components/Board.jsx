@@ -4,6 +4,7 @@ import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortabl
 import { useBoard } from "../contexts/BoardContext";
 import { useBoardDragAndDrop } from "../hooks/useBoardDragAndDrop";
 import { createBoardHandlers } from "../handlers/boardHandlers";
+import { createZoomHandlers } from "../handlers/zoomHandlers";
 import List from "./List";
 import Card from "./Card";
 import { ThemeToggleButton } from "./ThemeToggleButton";
@@ -11,75 +12,51 @@ import LabelSidebar from "./LabelSidebar";
 import FloatingScrollbar from "./FloatingScrollbar";
 
 /**
- * Mobile Zoom Hint Component
- * Shows a hint to users on mobile devices that they can zoom out for better navigation
+ * Floating Zoom Controls Component
+ * Provides zoom in/out/reset buttons for mobile devices
  */
-const MobileZoomHint = () => {
-  const [showHint, setShowHint] = useState(false);
-  const [isZoomedOut, setIsZoomedOut] = useState(false);
+const FloatingZoomControls = () => {
+  const [showZoomControls, setShowZoomControls] = useState(false);
+  const { handleZoomIn, handleZoomOut, handleResetZoom } = createZoomHandlers();
 
   useEffect(() => {
-    // Only show on mobile devices
-    const isMobile = window.innerWidth <= 768;
-    if (!isMobile) return;
-
-    // Show hint after a brief delay
-    const showTimer = setTimeout(() => {
-      setShowHint(true);
-    }, 3000);
-
-    // Hide hint after user interaction or after 8 seconds
-    const hideTimer = setTimeout(() => {
-      setShowHint(false);
-    }, 11000);
-
-    // Monitor viewport changes to detect zoom
-    const handleResize = () => {
-      const zoomLevel = window.devicePixelRatio;
-      const viewportWidth = window.innerWidth;
-
-      // Consider zoomed out if viewport is wider than expected for mobile
-      const isZoomedOutNow = zoomLevel < 1 || viewportWidth > 768;
-      setIsZoomedOut(isZoomedOutNow);
-
-      if (isZoomedOutNow) {
-        setShowHint(false);
-      }
+    const checkMobile = () => {
+      setShowZoomControls(window.innerWidth <= 768);
     };
 
-    // Listen for viewport changes
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-
-    // Initial check
-    handleResize();
-
-    // Hide hint on first touch
-    const handleFirstTouch = () => {
-      setShowHint(false);
-      document.removeEventListener('touchstart', handleFirstTouch);
-    };
-    document.addEventListener('touchstart', handleFirstTouch);
-
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      document.removeEventListener('touchstart', handleFirstTouch);
-    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  if (!showHint || isZoomedOut) return null;
+  if (!showZoomControls) return null;
 
   return (
-    <div className="zoom-out-hint">
-      Pinch to zoom out for better view 🔍
+    <div className="fixed bottom-20 right-4 flex flex-col space-y-2 z-50 zoom-controls">
+      <button
+        onClick={handleZoomIn}
+        className="w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center text-xl font-bold active:scale-95"
+        aria-label="Zoom in"
+      >
+        +
+      </button>
+      <button
+        onClick={handleZoomOut}
+        className="w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center text-xl font-bold active:scale-95"
+        aria-label="Zoom out"
+      >
+        −
+      </button>
+      <button
+        onClick={handleResetZoom}
+        className="w-12 h-12 bg-secondary text-secondary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center text-xs font-medium active:scale-95"
+        aria-label="Reset zoom"
+      >
+        1×
+      </button>
     </div>
   );
 };
-
-
 /**
  * Main Board Component
  * The top-level component that renders the entire Trello board
@@ -166,7 +143,7 @@ const Board = () => {
         </div>
 
         {/* Scrollable board content area */}
-        <div ref={boardContainerRef} className="pt-24 pb-6 h-full w-full overflow-x-auto board-container touch-optimized">
+        <div ref={boardContainerRef} className="pt-24 pb-6 h-full w-full overflow-x-auto board-container board-scroll-container touch-optimized">
           <div className="px-6">
             {/* Active Filter Indicator */}
             {boardData.activeFilters && boardData.activeFilters.length > 0 && (
@@ -260,8 +237,8 @@ const Board = () => {
       {/* Floating Scrollbar for Mobile */}
       <FloatingScrollbar targetElementRef={boardContainerRef} />
 
-      {/* Mobile Zoom Hint */}
-      <MobileZoomHint />
+      {/* Floating Zoom Controls for Mobile */}
+      <FloatingZoomControls />
     </DndContext>
   );
 };
