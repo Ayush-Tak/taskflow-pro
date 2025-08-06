@@ -6,7 +6,7 @@ TaskFlow Pro goes beyond traditional kanban tools by automatically managing task
 
 *Inspired by [Trello](https://trello.com) with enhanced intelligent features.*
 
-[🌟 **LIVE DEMO**](https://taskflow-pro.vercel.app/)
+[🌟 **LIVE DEMO**](https://taskflow-pro-ayush.vercel.app/)
 
 ## ✨ Key Features
 
@@ -148,6 +148,6 @@ We welcome contributions! Please follow these guidelines:
 
 <div align="center">
 
-**[🌟 Try TaskFlow Pro Live](https://taskflow-pro.vercel.app) | [📚 Documentation](README.md) | [🐛 Report Issues](https://github.com/Ayush-Tak/taskflow-pro/issues)**
+**[🌟 Try TaskFlow Pro Live](https://taskflow-pro-ayush.vercel.app) | [📚 Documentation](README.md) | [🐛 Report Issues](https://github.com/Ayush-Tak/taskflow-pro/issues)**
 
 *Built with ❤️ by [Ayush-Tak](https://github.com/Ayush-Tak)*
